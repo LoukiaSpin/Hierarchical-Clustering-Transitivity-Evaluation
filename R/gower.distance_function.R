@@ -66,13 +66,11 @@ gower_distance <- function (input) {
   
   
   ## Remove the first two columns 
-  #data <- 
-  #  data.frame(input[, apply(input, 2, function(x) !all(is.na(x)))][, -c(1:2)])
   data <- input[, -c(1:2)]
 
   
   ## Table with the variable type
-  char_type <- data.frame(characteristic = colnames(data),
+  char_type <- data.frame(characteristic = colnames(data), 
                           type = sapply(data, typeof))
   rownames(char_type) <- 1:dim(data)[2]
 
@@ -147,11 +145,6 @@ gower_distance <- function (input) {
   dist_mat <- as.data.frame(dist_mat0[-1, -dim(data)[1]])
   rownames(dist_mat) <- input[-1, 1]
   colnames(dist_mat) <- input[-dim(input)[1], 1]
-
-  
-  ## Turn it into 'as.dist' object 
-  #dist_mat_new <- 
-  #  as.dist(apply(dist_mat, 2, function(x) ifelse(is.na(x) == TRUE, 0, x)))
   
 
   ## Percentage total missing data

@@ -404,6 +404,7 @@ comp_clustering <- function (input,
   
   ## Prepare dataset for characteristic average contribution
   # Get the character by comparison data-frame
+  # zero contribution means that all studies had the same value for the corresponding characteristic
   contr_dataset0 <- as.data.frame(sapply(comparison_gower, function(x) x[[4]]))
   rownames(contr_dataset0) <- names(input_new[, -c(1:2)])
   
@@ -448,7 +449,7 @@ comp_clustering <- function (input,
                       values = c("#A6D854", "#E6AB02", "#D95F02", "#E31A1C"),
                       labels = c("Low", "Moderate", "High", "Very high")) +
     theme_bw() +
-    guides(fill = guide_legend(override.aes = list(size = legend_text_size))) + 
+    guides(fill = guide_legend(override.aes = list(size = 6))) + 
     theme(panel.grid.major = element_line(linetype = 2, color = "grey"),
           title = element_text(size = title_size, face = "bold"),
           axis.title = element_text(size = axis_title_size, face = "bold"),
@@ -490,7 +491,13 @@ comp_clustering <- function (input,
                                  function(x) length(na.omit(unlist(x[[1]]))))),
                total = rep(total_diss$total_dissimilarity,
                            sapply(comparison_gower, 
-                                  function(x) length(na.omit(unlist(x[[1]]))))))
+                                  function(x) length(na.omit(unlist(x[[1]]))))),
+               comp_size = 
+                 rep(comp_size$num_trials,
+                     sapply(comparison_gower, 
+                            function(x) length(na.omit(unlist(x[[1]])))))
+               )
+  diss_dataset$col <- ifelse(diss_dataset$comp_size > 1, "No", "Yes") #"#99CCFF", "red"
 
   
   ## Violin plot on dissimilarity distribution per comparison
@@ -498,7 +505,7 @@ comp_clustering <- function (input,
     ggplot(diss_dataset,
            aes(x = reorder(comp, total),
                y = diss)) +
-    geom_violin(fill = "#99CCFF",
+    geom_violin(aes(fill = col),
                 trim = TRUE, #FALSE
                 alpha = 0.3) +
     geom_boxplot(outlier.alpha = 0.3,
@@ -530,15 +537,20 @@ comp_clustering <- function (input,
               vjust = 2.8, 
               size = label_size,
               fontface = "plain",
-              colour = "blue") +
+              colour = "black") +
     stat_boxplot(geom = 'errorbar',
                  width = 0.2,
                  linetype = "dashed") +
+    scale_fill_manual(name = "Includes pseudostudies",
+                      breaks = c("Yes", "No"),
+                      limits = c("Yes", "No"),
+                      values = c("red", "#99CCFF"),
+                      labels = c("Yes", "No")) +
     labs(x = " ",
          y = "Gower's dissimilarity") +
     coord_cartesian(ylim = c(0, 1)) +
     theme_classic() +
-    theme(plot.title = element_text(face = "bold"),
+    theme(title = element_text(size = title_size, face = "bold"),
           axis.title = element_text(size = axis_title_size , face = "bold"),
           axis.text = element_text(size = axis_text_size),
           axis.text.x = element_text(angle = axis_x_text_angle, 
@@ -926,16 +938,16 @@ comp_clustering <- function (input,
     collect
   } else if (get_plots == TRUE & !is.null(internal_measures_panel)) {
     append(collect, list(Dissimilarity_comparison = comp_diss_plot,
+                         Characteristics_contribution = char_contr,
                          Total_dissimilarity_plot = total_diss_plot,
                          #Dissimilarity_plot = diss_plot,
-                         Characteristics_contribution = char_contr,
                          Internal_measures_panel = internal_measures_panel,
                          Silhouette_comparisons = plot_comp_silhouette))
   } else if (get_plots == TRUE & is.null(internal_measures_panel)) {
     append(collect, list(Dissimilarity_comparison = comp_diss_plot,
+                         Characteristics_contribution = char_contr,
                          Total_dissimilarity_plot = total_diss_plot,
                          #Dissimilarity_plot = diss_plot,
-                         Characteristics_contribution = char_contr,
                          Silhouette_comparisons = plot_comp_silhouette))
   }
   
