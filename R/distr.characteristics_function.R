@@ -201,19 +201,17 @@ distr_characteristics <- function (input,
   }
   
   
-  ## Indicate the pseudostudies (if applicable)
-  dataset_new$Pseudostudies <- 
-    factor(with(dataset_new, 
-                ifelse(startsWith(Trial_name, "new_"), "Yes", "No")))
-           #, 
-           #levels = c("Yes", "No"))
-  
-  
   ## Variable on sample size
   colnames(dataset_new)[with(dataset_new, 
                              startsWith(names(dataset_new), 
                                         c("sample", "Sample")))] <- "Sample size"
   
+  
+  ## Indicate the pseudostudies (if applicable)
+  dataset_new$Pseudostudies <- 
+    factor(with(dataset_new, 
+                ifelse(startsWith(Trial_name, "new_"), "Yes", "No")))
+
   
   ## Function for first letter capital (Source: https://stackoverflow.com/questions/18509527/first-letter-to-upper-case)
   firstup <- function(x) {

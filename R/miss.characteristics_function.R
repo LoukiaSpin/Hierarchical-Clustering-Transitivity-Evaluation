@@ -133,6 +133,12 @@ miss_characteristics <- function (input,
   }
   
   
+  ## Variable on sample size
+  colnames(input_new)[with(input_new, 
+                           startsWith(names(input_new), 
+                                      c("sample", "Sample")))] <- "Sample size"
+  
+  
   ## Dataframe with missing and observed data per characteristic
   yes <- colSums(is.na(input_new[, -c(1, 2)])) 
   no <- colSums(!is.na(input_new[, -c(1, 2)])) 
@@ -311,14 +317,6 @@ miss_characteristics <- function (input,
           legend.title = element_text(size = legend_title_size, face = "bold"),
           strip.text = element_text(size = strip_text_size, face = "bold"),
           strip.text.y.right = element_text(angle = strip_text_angle))  
-  
-  
-  ## Do not plot tile-plot if dataset is large
-  #tileplot <- if (dim(input)[1] > 48 & dim(input_new[, -c(1:2)])[2] > 10) {
-  #  message("Tile plot is cluttered, and hence, it will not be printed.")
-  #} else {
-  #  tileplot_mod
-  #}
     
   
   ## Collect results
