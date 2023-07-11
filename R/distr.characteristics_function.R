@@ -243,7 +243,8 @@ distr_characteristics <- function (input,
                    width = 0.2,
                    linetype = "dashed") +
       scale_color_manual(breaks = c("Yes", "No"),
-                         values = c("red", "black")) +
+                         values = c("red", "black"),
+                         limits = c("Yes", "No")) +
       labs(x = " ",
            y = " ",
            colour = "Pseudostudies",
