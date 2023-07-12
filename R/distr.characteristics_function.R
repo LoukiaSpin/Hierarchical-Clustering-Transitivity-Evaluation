@@ -3,7 +3,8 @@
 #' 
 #' @description 
 #'   \code{distr_characteristics} uses violin and bar plots to visualise the 
-#'   distribution of each characteristic in the dataset.
+#'   distribution of each characteristic in the dataset either per comparison
+#'   or cluster of comparisons.
 #'   
 #' @param input A data-frame in the long arm-based format. Two-arm trials occupy
 #'   one row in the data-frame. Multi-arm trials occupy as many rows as the
@@ -18,6 +19,12 @@
 #'   vector with the names of the characteristics, as they are wished to 
 #'   appear in the title of the plots. This argument is optional, in case the
 #'   user wants to improve the appearance of the titles.
+#' @param cluster An object of S3 class \code{\link{comp_clustering}} that has
+#'   informaion on the cluster of each comparison. See 'Value' in 
+#'   \code{\link{comp_clustering}}. If \code{cluster} is not provided, the 
+#'   function presents the distribution of characteristics per comparison; 
+#'   otherwise per cluster. In the latter, the function prints a table with the
+#'   comparisnos and the corresponding cluster.
 #' @param label_size A positive integer for the font size of labels in the bar 
 #'   plots. \code{label_size} determines the size argument found in the geom's 
 #'   aesthetic properties in the R-package 
@@ -65,6 +72,7 @@
 distr_characteristics <- function (input,
                                    drug_names,
                                    rename_char = NULL,
+                                   cluster = NULL,
                                    label_size = 3,
                                    axis_text_size = 14,
                                    axis_x_text_angle = 0) {
@@ -87,6 +95,12 @@ distr_characteristics <- function (input,
     as.character(1:length(unique(unlist(input0[, 2:3]))))
   } else {
     drug_names
+  }
+  
+  # Clustered comparisons
+  if (!is.null(cluster) & !inherits(cluster, "comp_clustering")) {
+    stop("'cluster' must be an object of S3 class 'comp_clustering'.",
+         call. = FALSE)
   }
   
   
@@ -211,109 +225,221 @@ distr_characteristics <- function (input,
   dataset_new$Pseudostudies <- 
     factor(with(dataset_new, 
                 ifelse(startsWith(Trial_name, "new_"), "Yes", "No")))
-
+  
   
   ## Function for first letter capital (Source: https://stackoverflow.com/questions/18509527/first-letter-to-upper-case)
   firstup <- function(x) {
     substr(x, 1, 1) <- toupper(substr(x, 1, 1))
     x
   }
-
   
-  ## Visualise distribution according to characteristic type
-  # Double type
-  double_type <- function (yvar) {
-    ggplot(subset(dataset_new, !is.na(dataset_new[, yvar])),
-           aes_(x = ~Comparison,
-                y = as.name(yvar))) +
-      geom_violin(fill = "#99CCFF",
-                  trim = FALSE,
-                  alpha = 0.3) +
-      geom_boxplot(outlier.alpha = 0.3,
-                   fill = "white",
-                   colour = "black",
-                   varwidth = TRUE) +
-      geom_point(aes_(colour = ~Pseudostudies,
-                      size = ~`Sample size`),
-                  #width = 0.2,
-                  ) +  
-      stat_boxplot(geom = 'errorbar',
-                   width = 0.2,
-                   linetype = "dashed") +
-      scale_color_manual(breaks = c("Yes", "No"),
-                         values = c("red", "black"),
-                         limits = c("Yes", "No")) +
-      labs(x = " ",
-           y = " ",
-           colour = "Pseudostudies",
-           #caption = 
-           #  if (min(table(input[, "Comparison"])) < 10) 
-           #   "Plot may look nonsensical with such little data!" else " "
-           ) +
-      guides(size = FALSE,
-             colour = guide_legend(override.aes = list(size = 3.5))) + 
-      theme_classic() +
-      ggtitle(as.name(yvar)) +
-      theme(plot.title = element_text(face = "bold"),
-            axis.title = element_text(size = 14, face = "bold"),
-            axis.text = element_text(size = axis_text_size),
-            axis.text.x = element_text(angle = axis_x_text_angle, 
-                                       hjust = 
-                                         ifelse(axis_x_text_angle == 0, 0.5, 1)
-                                       ),
-            legend.position = "bottom",
-            legend.text = element_text(size = 14),
-            legend.title = element_text(size = 14, face = "bold"),
-            plot.caption = element_text(size = 10, hjust = 0.0))
-  }
-
-  # Integer type
-  factor_type <- function (yvar) {
+  
+  ## Visualise characteristics per comparison or cluster
+  if (!is.null(cluster)) {
     
-    # Turn fist letter into capital
-    levels(dataset_new[, yvar]) <- 
-      firstup(as.character(sort(unique(dataset_new[, yvar]))))
+    ## Comparisons with their cluster
+    clustered_comp <- cluster$Cluster_color[, -3]
     
-    # Get the bar plot
-    ggplot(subset(dataset_new, !is.na(dataset_new[, yvar])),
-           aes_(x = ~Comparison)) +
-      geom_bar(stat = "count",
-               aes_(fill = as.name(yvar))) +
-      geom_text(data = data.frame(prop.table(table(dataset_new[, 2], 
-                                                   dataset_new[, yvar]), 
-                                             margin = 1),
-                                  count = table(dataset_new[, 2], 
-                                                dataset_new[, yvar])),
-                 inherit.aes = FALSE,
-                 aes_(x = ~Var1, 
-                      y = ~count.Freq, 
-                      group = ~Var2,
-                      label = ~ifelse(Freq != 0, 
-                                      paste0(round(Freq * 100, 1), "% (", 
-                                             count.Freq,")"), " ")), 
-                 hjust = 0.5, 
-                 vjust = 1.0, 
-                 size = label_size,
-                 position = "stack",
-                 colour = "white") +
-      labs(x = " ",
-           y = "Count",
-           fill = "Categories") +
-      theme_classic() +
-      ggtitle(as.name(yvar)) +
-      theme(plot.title = element_text(face = "bold"),
-            axis.title = element_text(size = 14, face = "bold"),
-            axis.text = element_text(size = axis_text_size),
-            axis.text.x = element_text(angle = axis_x_text_angle, 
-                                       hjust = 
-                                         ifelse(axis_x_text_angle == 0, 0.5, 1)
-                                       ),
-            legend.position = "bottom",
-            legend.direction = "horizontal",
-            legend.text = element_text(size = 14),
-            legend.title = element_text(size = 14, face = "bold"))
-  }
+    ## Include a column with the cluster of the comparisons
+    # Copy-paste the comparisons to a new column
+    dataset_new$`Comparison cluster` <- dataset_new$Comparison
+    
+    # Match the comparisons with the cluster
+    for (i in 1:dim(dataset_new)[1]) {
+      dataset_new$`Comparison cluster`[
+        dataset_new$`Comparison cluster` == clustered_comp[i, 1]] <- 
+        clustered_comp[i, 2]
+    }
 
+    
+    ## Visualise distribution according to characteristic type
+    # Double type
+    double_type <- function (yvar) {
+      ggplot(subset(dataset_new, !is.na(dataset_new[, yvar])),
+             aes_(x = ~`Comparison cluster`,
+                  y = as.name(yvar))) +
+        geom_violin(fill = "#99CCFF",
+                    trim = FALSE,
+                    alpha = 0.3) +
+        geom_boxplot(outlier.alpha = 0.3,
+                     fill = "white",
+                     colour = "black",
+                     varwidth = TRUE) +
+        geom_point(aes_(colour = ~Pseudostudies,
+                        size = ~`Sample size`)) + 
+        stat_boxplot(geom = 'errorbar',
+                     width = 0.2,
+                     linetype = "dashed") +
+        scale_color_manual(breaks = c("Yes", "No"),
+                           values = c("red", "black"),
+                           limits = c("Yes", "No")) +
+        labs(x = " ",
+             y = " ",
+             colour = "Pseudostudies") +
+        guides(size = FALSE,
+               colour = guide_legend(override.aes = list(size = 3.5))) + 
+        theme_classic() +
+        ggtitle(as.name(yvar)) +
+        theme(plot.title = element_text(face = "bold"),
+              axis.title = element_text(size = 14, face = "bold"),
+              axis.text = element_text(size = axis_text_size),
+              axis.text.x = element_text(angle = axis_x_text_angle, 
+                                         hjust = 
+                                           ifelse(axis_x_text_angle == 0, 0.5, 1)
+              ),
+              legend.position = "bottom",
+              legend.text = element_text(size = 14),
+              legend.title = element_text(size = 14, face = "bold"),
+              plot.caption = element_text(size = 10, hjust = 0.0))
+    }
+    
+    
+    # Integer type
+    factor_type <- function (yvar) {
+      
+      # Turn fist letter into capital
+      levels(dataset_new[, yvar]) <- 
+        firstup(as.character(sort(unique(dataset_new[, yvar]))))
+      
+      # Get the bar plot
+      ggplot(subset(dataset_new, !is.na(dataset_new[, yvar])),
+             aes_(x = ~`Comparison cluster`)) +
+        geom_bar(stat = "count",
+                 aes_(fill = as.name(yvar))) +
+        geom_text(data = data.frame(prop.table(table(dataset_new[, "Comparison cluster"], 
+                                                     dataset_new[, yvar]), 
+                                               margin = 1),
+                                    count = table(dataset_new[, "Comparison cluster"], 
+                                                  dataset_new[, yvar])),
+                  inherit.aes = FALSE,
+                  aes_(x = ~Var1, 
+                       y = ~count.Freq, 
+                       group = ~Var2,
+                       label = ~ifelse(Freq != 0, 
+                                       paste0(round(Freq * 100, 1), "% (", 
+                                              count.Freq,")"), " ")), 
+                  hjust = 0.5, 
+                  vjust = 1.0, 
+                  size = label_size,
+                  position = "stack",
+                  colour = "white") +
+        labs(x = " ",
+             y = "Count",
+             fill = "Categories") +
+        theme_classic() +
+        ggtitle(as.name(yvar)) +
+        theme(plot.title = element_text(face = "bold"),
+              axis.title = element_text(size = 14, face = "bold"),
+              axis.text = element_text(size = axis_text_size),
+              axis.text.x = element_text(angle = axis_x_text_angle, 
+                                         hjust = 
+                                           ifelse(axis_x_text_angle == 0, 0.5, 1)
+              ),
+              legend.position = "bottom",
+              legend.direction = "horizontal",
+              legend.text = element_text(size = 14),
+              legend.title = element_text(size = 14, face = "bold"))
+    }
+    
+    
+    ## Remind the users which comparisons belong to each cluster
+    message(paste0(capture.output(
+      knitr::kable(clustered_comp[order(clustered_comp$cluster),],
+                   align = "ll",
+                   caption = "Comparisons with their clusters")), 
+      collapse = "\n"))
+    
+  } else {
+
+    ## Visualise distribution according to characteristic type
+    # Double type
+    double_type <- function (yvar) {
+      ggplot(subset(dataset_new, !is.na(dataset_new[, yvar])),
+             aes_(x = ~Comparison,
+                  y = as.name(yvar))) +
+        geom_violin(fill = "#99CCFF",
+                    trim = FALSE,
+                    alpha = 0.3) +
+        geom_boxplot(outlier.alpha = 0.3,
+                     fill = "white",
+                     colour = "black",
+                     varwidth = TRUE) +
+        geom_point(aes_(colour = ~Pseudostudies,
+                        size = ~`Sample size`)) +  
+        stat_boxplot(geom = 'errorbar',
+                     width = 0.2,
+                     linetype = "dashed") +
+        scale_color_manual(breaks = c("Yes", "No"),
+                           values = c("red", "black"),
+                           limits = c("Yes", "No")) +
+        labs(x = " ",
+             y = " ",
+             colour = "Pseudostudies") +
+        guides(size = FALSE,
+               colour = guide_legend(override.aes = list(size = 3.5))) + 
+        theme_classic() +
+        ggtitle(as.name(yvar)) +
+        theme(plot.title = element_text(face = "bold"),
+              axis.title = element_text(size = 14, face = "bold"),
+              axis.text = element_text(size = axis_text_size),
+              axis.text.x = element_text(angle = axis_x_text_angle, 
+                                         hjust = 
+                                           ifelse(axis_x_text_angle == 0, 0.5, 1)
+              ),
+              legend.position = "bottom",
+              legend.text = element_text(size = 14),
+              legend.title = element_text(size = 14, face = "bold"),
+              plot.caption = element_text(size = 10, hjust = 0.0))
+    }
+    
+    # Integer type
+    factor_type <- function (yvar) {
+      
+      # Turn fist letter into capital
+      levels(dataset_new[, yvar]) <- 
+        firstup(as.character(sort(unique(dataset_new[, yvar]))))
+      
+      # Get the bar plot
+      ggplot(subset(dataset_new, !is.na(dataset_new[, yvar])),
+             aes_(x = ~Comparison)) +
+        geom_bar(stat = "count",
+                 aes_(fill = as.name(yvar))) +
+        geom_text(data = data.frame(prop.table(table(dataset_new[, 2], 
+                                                     dataset_new[, yvar]), 
+                                               margin = 1),
+                                    count = table(dataset_new[, 2], 
+                                                  dataset_new[, yvar])),
+                  inherit.aes = FALSE,
+                  aes_(x = ~Var1, 
+                       y = ~count.Freq, 
+                       group = ~Var2,
+                       label = ~ifelse(Freq != 0, 
+                                       paste0(round(Freq * 100, 1), "% (", 
+                                              count.Freq,")"), " ")), 
+                  hjust = 0.5, 
+                  vjust = 1.0, 
+                  size = label_size,
+                  position = "stack",
+                  colour = "white") +
+        labs(x = " ",
+             y = "Count",
+             fill = "Categories") +
+        theme_classic() +
+        ggtitle(as.name(yvar)) +
+        theme(plot.title = element_text(face = "bold"),
+              axis.title = element_text(size = 14, face = "bold"),
+              axis.text = element_text(size = axis_text_size),
+              axis.text.x = element_text(angle = axis_x_text_angle, 
+                                         hjust = 
+                                           ifelse(axis_x_text_angle == 0, 0.5, 1)
+              ),
+              legend.position = "bottom",
+              legend.direction = "horizontal",
+              legend.text = element_text(size = 14),
+              legend.title = element_text(size = 14, face = "bold"))
+    }
+    
+  }
     
   ## List of graphs and suppressing warning 
   suppressWarnings({

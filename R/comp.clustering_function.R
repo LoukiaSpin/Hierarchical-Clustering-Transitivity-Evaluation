@@ -262,23 +262,6 @@ comp_clustering <- function (input,
   message(paste0("-", " ", unique_comp, " ", "observed comparisons (", 
                  single_study_comp, " ", "single-study comparisons)"))
   
-  
-  ## Checking further defaults
-  # Number of 'optimal' clusters (based on the internal measures)
-  #optimal_clusters <- if (missing(optimal_clusters)) {
-  #  2
-  #  #stop("The argument 'optimal_clusters' must be defined", call. = FALSE)
-  #} else if ((optimal_clusters > length(unique(input$Comparison)) - 1 ||
-  #           optimal_clusters < 2) & length(unique(input$Comparison)) > 3) {
-  #  stop(paste0("'optimal_clusters' must range from 2 to", " ", 
-  #              length(unique(input$Comparison)) - 1, "."), call. = FALSE)
-  #} else if ((optimal_clusters > length(unique(input$Comparison)) - 1 ||
-  #            optimal_clusters < 2) & length(unique(input$Comparison)) == 3) {
-  #  stop(paste0("'optimal_clusters' must equal exactly 2."), call. = FALSE)
-  #} else {
-  #  optimal_clusters
-  #}
-  
 
   ## Reduce dataset to trial, comparison & characteristics
   input_new0 <- input[, c(1, dim(input)[2], 4:(dim(input)[2] - 1))]
@@ -378,16 +361,16 @@ comp_clustering <- function (input,
   
   
   ## Default (to be used in 'connectivity_index')
-  num_neighb <- if (missing(num_neighb)) {
-    #message(paste("- num_neighb =", round(length(split_dataset) / 2, 0), 
-    #              "was used (default)"))
-    round(length(split_dataset) / 2, 0)
-  } else if (num_neighb > length(split_dataset) || num_neighb < 2) {
-    stop(paste0("'num_neighb' must range from 2 to", " ", 
-                length(split_dataset) - 1, "."), call. = FALSE)
-  } else {
-    num_neighb
-  }
+  #num_neighb <- if (missing(num_neighb)) {
+  #  #message(paste("- num_neighb =", round(length(split_dataset) / 2, 0), 
+  #  #              "was used (default)"))
+  #  round(length(split_dataset) / 2, 0)
+  #} else if (num_neighb > length(split_dataset) || num_neighb < 2) {
+  #  stop(paste0("'num_neighb' must range from 2 to", " ", 
+  #              length(split_dataset) - 1, "."), call. = FALSE)
+  #} else {
+  #  num_neighb
+  #}
   
   
   ## Calculate the Gower dissimilarity among trials by comparison 
@@ -673,6 +656,19 @@ comp_clustering <- function (input,
     }
     
     
+    ## Default (to be used in 'connectivity_index')
+    num_neighb <- if (missing(num_neighb)) {
+      #message(paste("- num_neighb =", round(length(split_dataset) / 2, 0), 
+      #              "was used (default)"))
+      round(length(split_dataset) / 2, 0)
+    } else if (num_neighb > length(split_dataset) || num_neighb < 2) {
+      stop(paste0("'num_neighb' must range from 2 to", " ", 
+                  length(split_dataset) - 1, "."), call. = FALSE)
+    } else {
+      num_neighb
+    }
+    
+    
     ## Distance methods of the 'dist' function
     distance_methods <- 
       c("euclidean", "maximum", "manhattan", "canberra", "minkowski")
@@ -944,6 +940,7 @@ comp_clustering <- function (input,
                          Total_dissimilarity_plot = total_diss_plot))
   }
   
+  class(results) <- "comp_clustering"
   
   return(suppressWarnings({print(results)}))
 }
