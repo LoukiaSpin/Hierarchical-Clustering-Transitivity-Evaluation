@@ -20,7 +20,7 @@
 #'   appear in the title of the plots. This argument is optional, in case the
 #'   user wants to improve the appearance of the titles.
 #' @param cluster An object of S3 class \code{\link{comp_clustering}} that has
-#'   informaion on the cluster of each comparison. See 'Value' in 
+#'   information on the cluster of each comparison. See 'Value' in 
 #'   \code{\link{comp_clustering}}. If \code{cluster} is not provided, the 
 #'   function presents the distribution of characteristics per comparison; 
 #'   otherwise per cluster. In the latter, the function prints a table with the
@@ -67,6 +67,8 @@
 #'   function.
 #' 
 #' @author {Loukia M. Spineli}
+#'
+#' @seealso \code{\link{comp_clustering}}
 #'
 #' @export
 distr_characteristics <- function (input,
