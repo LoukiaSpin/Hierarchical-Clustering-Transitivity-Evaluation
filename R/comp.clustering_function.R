@@ -19,6 +19,10 @@
 #'   vector with the names of the characteristics, as they are wished to 
 #'   appear in the title of the plots. This argument is optional, in case the
 #'   user wants to improve the appearance of the titles.
+#' @param height Logical with values \code{TRUE} for cutting the dendrogram at 
+#'   height 0.249 and \code{FALSE} for allowing the user to define the number of 
+#'   clusters via the argument \code{optimal_clusters}. The default argument is 
+#'   \code{FALSE}.
 #' @param num_neighb A positive integer for the number of neighbouring 
 #'   comparisons that is found in the \code{\link{connectivity_index}} and 
 #'   \code{\link{internal_measures_plot}} functions. It takes values from two to 
@@ -188,6 +192,7 @@
 comp_clustering <- function (input, 
                              drug_names,
                              rename_char = NULL,
+                             height = FALSE,
                              num_neighb, 
                              optimal_clusters, 
                              get_plots = "none",
@@ -260,19 +265,19 @@ comp_clustering <- function (input,
   
   ## Checking further defaults
   # Number of 'optimal' clusters (based on the internal measures)
-  optimal_clusters <- if (missing(optimal_clusters)) {
-    2
-    #stop("The argument 'optimal_clusters' must be defined", call. = FALSE)
-  } else if ((optimal_clusters > length(unique(input$Comparison)) - 1 ||
-             optimal_clusters < 2) & length(unique(input$Comparison)) > 3) {
-    stop(paste0("'optimal_clusters' must range from 2 to", " ", 
-                length(unique(input$Comparison)) - 1, "."), call. = FALSE)
-  } else if ((optimal_clusters > length(unique(input$Comparison)) - 1 ||
-              optimal_clusters < 2) & length(unique(input$Comparison)) == 3) {
-    stop(paste0("'optimal_clusters' must equal exactly 2."), call. = FALSE)
-  } else {
-    optimal_clusters
-  }
+  #optimal_clusters <- if (missing(optimal_clusters)) {
+  #  2
+  #  #stop("The argument 'optimal_clusters' must be defined", call. = FALSE)
+  #} else if ((optimal_clusters > length(unique(input$Comparison)) - 1 ||
+  #           optimal_clusters < 2) & length(unique(input$Comparison)) > 3) {
+  #  stop(paste0("'optimal_clusters' must range from 2 to", " ", 
+  #              length(unique(input$Comparison)) - 1, "."), call. = FALSE)
+  #} else if ((optimal_clusters > length(unique(input$Comparison)) - 1 ||
+  #            optimal_clusters < 2) & length(unique(input$Comparison)) == 3) {
+  #  stop(paste0("'optimal_clusters' must equal exactly 2."), call. = FALSE)
+  #} else {
+  #  optimal_clusters
+  #}
   
 
   ## Reduce dataset to trial, comparison & characteristics
@@ -497,7 +502,7 @@ comp_clustering <- function (input,
                      sapply(comparison_gower, 
                             function(x) length(na.omit(unlist(x[[1]])))))
                )
-  diss_dataset$col <- ifelse(diss_dataset$comp_size > 1, "No", "Yes") #"#99CCFF", "red"
+  diss_dataset$col <- ifelse(diss_dataset$comp_size > 1, "No", "Yes") 
 
   
   ## Violin plot on dissimilarity distribution per comparison
@@ -588,262 +593,250 @@ comp_clustering <- function (input,
   }
   
   
-  ## Distance methods of the 'dist' function
-  distance_methods <- 
-    c("euclidean", "maximum", "manhattan", "canberra", "minkowski")
-  
-  
   ## Linkage methods of the 'hclust' function
   linkage_methods <- c("ward.D", "ward.D2", "single", "complete", "average", 
                        "mcquitty", "median", "centroid")
   
   
-  ## Possible combinations of 'distance_methods' with 'linkage_methods'
-  # Data-frame of possible combinations
-  poss_comb <- expand.grid(distance = distance_methods, 
-                           linkage = linkage_methods,
-                           stringsAsFactors = FALSE)
-  
-  # Obtain results
-  table_coph <-
-    data.frame(poss_comb,
-               results =
-                 mapply(function(x, y) 
-                   round(cor(dist(total_diss[, 3], method = x, p = 3),
-                             cophenetic(hclust(dist(total_diss[, 3], 
-                                                    method = x, p = 3),
-                                               method = y))), 3),
-                   x = as.character(poss_comb$distance), 
-                   y = as.character(poss_comb$linkage)))
-  
-  # Cophenetic coefficient of Gower for different linkage methods
-  table_coph_gower <-
-    data.frame(distance = rep("gower", length(linkage_methods)),
-               linkage = linkage_methods,
-               results = 
-                 sapply(linkage_methods, 
-                        function(x) round(cor(gower_fun(total_diss), 
-                                              cophenetic(hclust(
-                                                gower_fun(total_diss),
-                                                method = x))), 3)))
-  rownames(table_coph_gower) <- NULL
-  
-  # Bring both tables together
-  table_cophenetic0 <- rbind(table_coph, table_coph_gower)
-  table_cophenetic <- 
-    table_cophenetic0[order(table_cophenetic0$results, decreasing = TRUE), ]
-  
-  
-  ## Select the distance and linkage methods for the max cophenetic coefficient
-  optimal_dist_link <- subset(table_cophenetic, results == max(results))
-  
-  
-  ## When more distances or linkages are proper for the same cophenetic coeff.
-  if (length(unique(optimal_dist_link[, 1])) > 1 & 
-      is.element("gower", optimal_dist_link[, 1])) {
-    optimal_dist <- "gower"
-    optimal_link <- 
-      optimal_dist_link[optimal_dist_link$distance == optimal_dist, 2][1] #optimal_dist_link[1, 2]
-  } else if (length(unique(optimal_dist_link[, 1])) > 1 & 
-             !is.element("gower", optimal_dist_link[, 1])) {
-    optimal_dist <- optimal_dist_link[1, 1]
-    optimal_link <- 
-      optimal_dist_link[optimal_dist_link$distance == optimal_dist, 2][1]#optimal_dist_link[1, 2]
-  } else if (length(unique(optimal_dist_link[, 1])) == 1) {
-    optimal_dist <- unique(optimal_dist_link[, 1])
-    optimal_link <- optimal_dist_link[1, 2]
-  } else if (dim(optimal_dist_link[, 1])[1] == 1) {
-    optimal_dist <- optimal_dist_link[1]
-    optimal_link <- optimal_dist_link[2]
-  }
-  
-  
-  ## Print the distance and linkage methods not selected
-  # Distance method(s)
-  #worst_dist0 <- c(distance_methods, "gower")[!c(distance_methods, "gower") %in% 
-  #                                              unique(optimal_dist_link[, 1])] 
-  # Linkage method(s)
-  #worst_link0 <- 
-  #  linkage_methods[!linkage_methods %in% unique(optimal_dist_link[, 2])] 
-
-  # Add 'none' if necessary
-  #worst_dist <- if (length(worst_dist0) > 0) {
-  #  worst_dist0
-  #} else {
-  #  "All had the same cophenetic coefficient"
-  #}
-  #worst_link <- if (length(worst_link0) > 0) {
-  #  worst_link0
-  #} else {
-  #  "All had the same cophenetic coefficient"
-  #}
-
-  # Messages
-  #message(paste("- Distance methods not selected:", paste(worst_dist, 
-  #                                                      collapse = ", ")))
-  #message(paste("- Linkage methods not selected:", paste(worst_link, 
-  #                                                     collapse = ", ")))
-  
-  
-  ## Report the optimal dissimilarity measure and linkage method 
-  message(paste("- Cophenetic coefficient:", max(table_cophenetic[, 3])))
-  message(paste("- Optimal dissimilarity measure:", optimal_dist))
-  message(paste("- Optimal linkage method:", optimal_link))
-
-  
-  ## Dissimilarity matrix of comparisons for the optimal dissimilarity measure
-  data_cluster <- if (optimal_dist != "gower") {
-    dist(matrix(total_diss[, 3], 
-                dimnames = list(rownames(total_diss))), 
-         method = optimal_dist)
+  ## Different route depending on whether we choose the height or not
+  if (height == TRUE) {
+    
+    # Dissimilarity matrix among comparisons
+    data_cluster <- gower_fun(total_diss)
+    
+    # Cophenetic correlation coefficient for different linkage methods
+    table_coph0 <- 
+      data.frame(
+        linkage_methods,
+        do.call(rbind, 
+                lapply(linkage_methods, 
+                       function(x) round(cor(data_cluster,
+                                             cophenetic(hclust(data_cluster,
+                                                               method = x))), 3)
+                                )
+                         )
+                 )
+    colnames(table_coph0) <- c("linkage", "results")
+    
+    table_cophenetic <- 
+      table_coph0[order(table_coph0$results, decreasing = TRUE), ]
+    
+    
+    ## Select the linkage method for the max cophenetic coefficient
+    optimal_link <- subset(table_cophenetic, results == max(results))[1]
+    
+    
+    ## Report the optimal linkage method 
+    message(paste("- Cophenetic coefficient:", max(table_cophenetic[, 2])))
+    message(paste("- Gower's dissimilarity was used"))
+    message(paste("- Optimal linkage method:", optimal_link))
+    
+    
+    ## Get the clusters after cutting at height of 0.249 (low heterogeneity)
+    clustered_comp0 <- cutree(hclust(gower_fun(total_diss), 
+                                     method = optimal_link), 
+                              h = 0.249)
+    
+    
+    ## Data-frame of comparisons and corresponding cluster
+    clustered_comp <- cbind(comp = names(clustered_comp0), 
+                            cluster = as.data.frame(clustered_comp0))
+    rownames(clustered_comp) <- NULL
+    
+    
+    ## Clusters obtained
+    optimal_clusters <- length(unique(clustered_comp0))
+    
+    
+    ## Barplot on total dissimilarity
+    # Prepare the dataset with the clusters
+    total_diss_new <- data.frame(total_diss[, c(1, 3)], 
+                                 cluster = clustered_comp[, 2])
+    
   } else {
-    gower_fun(total_diss)
+    
+   
+    ## Checking further defaults
+    # Number of 'optimal' clusters (based on the internal measures)
+    optimal_clusters <- if (missing(optimal_clusters)) {
+      2
+      #stop("The argument 'optimal_clusters' must be defined", call. = FALSE)
+    } else if ((optimal_clusters > length(unique(input$Comparison)) - 1 ||
+                optimal_clusters < 2) & length(unique(input$Comparison)) > 3) {
+      stop(paste0("'optimal_clusters' must range from 2 to", " ", 
+                  length(unique(input$Comparison)) - 1, "."), call. = FALSE)
+    } else if ((optimal_clusters > length(unique(input$Comparison)) - 1 ||
+                optimal_clusters < 2) & length(unique(input$Comparison)) == 3) {
+      stop(paste0("'optimal_clusters' must equal exactly 2."), call. = FALSE)
+    } else {
+      optimal_clusters
+    }
+    
+    
+    ## Distance methods of the 'dist' function
+    distance_methods <- 
+      c("euclidean", "maximum", "manhattan", "canberra", "minkowski")
+    
+    
+    ## Possible combinations of 'distance_methods' with 'linkage_methods'
+    # Data-frame of possible combinations
+    poss_comb <- expand.grid(distance = distance_methods, 
+                             linkage = linkage_methods,
+                             stringsAsFactors = FALSE)
+    
+    # Obtain results on cophenetic correlation coefficient
+    table_coph <-
+      data.frame(poss_comb,
+                 results =
+                   mapply(function(x, y) 
+                     round(cor(dist(total_diss[, 3], method = x, p = 3),
+                               cophenetic(hclust(dist(total_diss[, 3], 
+                                                      method = x, p = 3),
+                                                 method = y))), 3),
+                     x = as.character(poss_comb$distance), 
+                     y = as.character(poss_comb$linkage)))
+    
+    # Cophenetic coefficient of Gower for different linkage methods
+    table_coph_gower <-
+      data.frame(distance = rep("gower", length(linkage_methods)),
+                 linkage = linkage_methods,
+                 results = 
+                   sapply(linkage_methods, 
+                          function(x) round(cor(gower_fun(total_diss), 
+                                                cophenetic(hclust(
+                                                  gower_fun(total_diss),
+                                                  method = x))), 3)))
+    rownames(table_coph_gower) <- NULL
+    
+    # Bring both tables together
+    table_cophenetic0 <- rbind(table_coph, table_coph_gower)
+    table_cophenetic <- 
+      table_cophenetic0[order(table_cophenetic0$results, decreasing = TRUE), ]
+    
+    
+    ## Select the distance and linkage methods for the max cophenetic coefficient
+    optimal_dist_link <- subset(table_cophenetic, results == max(results))
+    
+    
+    ## When more distances or linkages are proper for the same cophenetic coeff.
+    if (length(unique(optimal_dist_link[, 1])) > 1 & 
+        is.element("gower", optimal_dist_link[, 1])) {
+      optimal_dist <- "gower"
+      optimal_link <- 
+        optimal_dist_link[optimal_dist_link$distance == optimal_dist, 2][1] #optimal_dist_link[1, 2]
+    } else if (length(unique(optimal_dist_link[, 1])) > 1 & 
+               !is.element("gower", optimal_dist_link[, 1])) {
+      optimal_dist <- optimal_dist_link[1, 1]
+      optimal_link <- 
+        optimal_dist_link[optimal_dist_link$distance == optimal_dist, 2][1]#optimal_dist_link[1, 2]
+    } else if (length(unique(optimal_dist_link[, 1])) == 1) {
+      optimal_dist <- unique(optimal_dist_link[, 1])
+      optimal_link <- optimal_dist_link[1, 2]
+    } else if (dim(optimal_dist_link[, 1])[1] == 1) {
+      optimal_dist <- optimal_dist_link[1]
+      optimal_link <- optimal_dist_link[2]
+    }
+    
+    
+    ## Report the optimal dissimilarity measure and linkage method 
+    message(paste("- Cophenetic coefficient:", max(table_cophenetic[, 3])))
+    message(paste("- Optimal dissimilarity measure:", optimal_dist))
+    message(paste("- Optimal linkage method:", optimal_link))
+    
+    
+    ## Dissimilarity matrix of comparisons for the optimal dissimilarity measure
+    data_cluster <- if (optimal_dist != "gower") {
+      dist(matrix(total_diss[, 3], 
+                  dimnames = list(rownames(total_diss))), 
+           method = optimal_dist)
+    } else {
+      gower_fun(total_diss)
+    }
+    
+    
+    ## Table on internal measures results for all combinations
+    table_internal_measures <- 
+      internal_measures_plot(input = data_cluster, 
+                             num_neighb = num_neighb,
+                             optimal_link = optimal_link)$Table_internal_measures
+    
+    
+    ## Panel of internal measures 
+    internal_measures_panel <- if (dim(table_internal_measures)[1] > 1) {
+      internal_measures_plot(input = data_cluster, 
+                             num_neighb = num_neighb,
+                             optimal_link = optimal_link)$Internal_measures_panel
+    } else {
+      a <- "At least four comparisons are needed to create a panel with plots"
+      b <- "on internal measures for a range of clusters!"
+      message(paste(a, b))
+    }
+    
+    
+    ## Silhouette width per comparison for selected cluster and linkage method
+    silhouette_comp <-
+      silhouette_index(input = data_cluster, 
+                       method = optimal_link, 
+                       num_clusters = optimal_clusters)$silhoutte_comp
+    
+    ## Add 0.02 to comparison with 0 silhouette so that the bar is coloured
+    silhouette_comp$silhouette_new <- 
+      ifelse(silhouette_comp$silhouette == 0, 0.01, silhouette_comp$silhouette)
+    
+    
+    ## Average silhouette width
+    average_silhouette <-
+      silhouette_index(input = data_cluster, 
+                       method = optimal_link, 
+                       num_clusters = optimal_clusters)$silhoutte_width
+    
+    
+    ## Plot silhouette by comparison and cluster
+    plot_comp_silhouette <- 
+      ggplot(silhouette_comp,
+             aes(x = silhouette_new,
+                 y = reorder(comp, silhouette_new),
+                 group = reorder(factor(cluster), silhouette_new),
+                 fill = factor(cluster))) +
+      geom_bar(stat = "identity") +
+      geom_vline(xintercept = average_silhouette, 
+                 colour = "black", 
+                 linewidth = 0.6,
+                 linetype = 3) +
+      geom_text(aes(label = sprintf("%0.2f",round(silhouette, 2))),
+                hjust = 1.1, 
+                vjust = 0.2, 
+                size = label_size,
+                colour = "black") +
+      geom_text(aes(x = average_silhouette,
+                    y = 0.44,
+                    label = sprintf("%0.2f",round(average_silhouette, 2))),
+                hjust = 0.5, 
+                vjust = 0.0, 
+                colour = "blue",
+                size = label_size) +
+      scale_x_continuous(limits = c(-1, 1)) +
+      labs(x = "Silhouette width", 
+           y = " ",
+           fill = "Cluster") +
+      theme_classic() +
+      guides(fill = guide_legend(nrow = 1)) +
+      theme(title = element_text(size = title_size, face = "bold"),
+            axis.title = element_text(size = axis_title_size),
+            axis.text = element_text(size = axis_text_size),
+            legend.position = "bottom",
+            legend.text = element_text(size = legend_text_size),
+            plot.caption = element_text(size = 10, hjust = 0.0))
+    
+    
+    ## Barplot on total dissimilarity
+    # Prepare the dataset with the clusters
+    total_diss_new <- data.frame(total_diss[, c(1, 3)], 
+                                 cluster = silhouette_comp[, 2])
   }
   
-  
-  ## Dissimilarity plot of comparisons
-  # Define the limits of the legend based on the 'distance_method'
-  limits_scale <- if(optimal_dist != "gower") {
-    c(min(data_cluster), max(data_cluster))
-  } else {
-    c(0, 1)
-  }
-  
-  # Function for first letter capital (Source: https://stackoverflow.com/questions/18509527/first-letter-to-upper-case)
-  firstup <- function(x) {
-    substr(x, 1, 1) <- toupper(substr(x, 1, 1))
-    x
-  }
-  
-  # Turn first letter capital
-  optimal_dist_new <- if (is.element(optimal_dist, 
-                                     c(distance_methods[-2], "gower"))) {
-    firstup(optimal_dist)
-  } else {
-    optimal_dist
-  }
-  
-  # Get the plot (DO NOT PRESENT)
-  diss_plot <- ggplot(melt(as.matrix(data_cluster)),
-                      aes(x = reorder(Var2, value),
-                          y = reorder(Var1, value),
-                          fill = value)) +
-    geom_tile() +
-    geom_text(aes(x = Var2, 
-                  y = Var1, 
-                  label = ifelse(is.na(value), " ", sprintf("%.2f", value))),
-              size = 4,
-              colour = "black") +
-    scale_fill_gradient2(name = paste(optimal_dist_new, "dissimilarity"), 
-                         low = "white", 
-                         high = "red", 
-                         na.value = "grey90",
-                         limits = c(limits_scale[1], limits_scale[2])) + 
-    labs(x = " ", 
-         y = " ") +
-    theme_classic() +
-    guides(fill = guide_colorbar(barwidth = 11, 
-                                 barheight = 1,
-                                 title.position = "top")) +
-    theme(title = element_text(size = title_size, face = "bold"),
-          axis.title = element_text(size = axis_title_size),
-          axis.text = element_text(size = axis_text_size),
-          axis.text.x = element_text(angle = axis_x_text_angle, 
-                                     hjust = 
-                                       ifelse(axis_x_text_angle == 0, 0.5, 1)),
-          legend.position = "bottom",
-          legend.text = element_text(size = legend_text_size))
 
-
-  ## Table on internal measures results for all combinations
-  table_internal_measures <- 
-    internal_measures_plot(input = data_cluster, 
-                           num_neighb = num_neighb,
-                           optimal_link = optimal_link)$Table_internal_measures
-
-  
-  ## Report the optimal number of clusters
-  #message(paste("- Optimal clustering:", optimal_clusters, "clusters"))
-  
-  
-  ## Panel of internal measures 
-  internal_measures_panel <- if (dim(table_internal_measures)[1] > 1) {
-    internal_measures_plot(input = data_cluster, 
-                           num_neighb = num_neighb,
-                           optimal_link = optimal_link)$Internal_measures_panel
-  } else {
-    a <- "At least four comparisons are needed to create a panel with plots"
-    b <- "on internal measures for a range of clusters!"
-    message(paste(a, b))
-  }
-  
-  
-  ## Silhouette width per comparison for selected cluster and linkage method
-  silhouette_comp <-
-    silhouette_index(input = data_cluster, 
-                     method = optimal_link, 
-                     num_clusters = optimal_clusters)$silhoutte_comp
-  
-  ## Add 0.02 to comparison with 0 silhouette so that the bar is coloured
-  silhouette_comp$silhouette_new <- 
-    ifelse(silhouette_comp$silhouette == 0, 0.01, silhouette_comp$silhouette)
-  
-  
-  ## Average silhouette width
-  average_silhouette <-
-    silhouette_index(input = data_cluster, 
-                     method = optimal_link, 
-                     num_clusters = optimal_clusters)$silhoutte_width
-  
-  
-  ## Plot silhouette by comparison and cluster
-  plot_comp_silhouette <- 
-    ggplot(silhouette_comp,
-           aes(x = silhouette_new,
-               y = reorder(comp, silhouette_new),
-               group = reorder(factor(cluster), silhouette_new),
-               fill = factor(cluster))) +
-    geom_bar(stat = "identity") +
-    geom_vline(xintercept = average_silhouette, 
-               colour = "black", 
-               linewidth = 0.6,
-               linetype = 3) +
-    geom_text(aes(label = sprintf("%0.2f",round(silhouette, 2))),
-              hjust = 1.1, 
-              vjust = 0.2, 
-              size = label_size,
-              colour = "black") +
-    geom_text(aes(x = average_silhouette,
-                  y = 0.44,
-                  label = sprintf("%0.2f",round(average_silhouette, 2))),
-               hjust = 0.5, 
-               vjust = 0.0, 
-               colour = "blue",
-               size = label_size) +
-    scale_x_continuous(limits = c(-1, 1)) +
-    labs(x = "Silhouette width", 
-         y = " ",
-         fill = "Cluster",
-         #caption = paste("Average silhouette =", 
-         #                round(average_silhouette, 2))
-         ) +
-    #ggtitle(paste("Using", optimal_link, "linkage")) + 
-    theme_classic() +
-    guides(fill = guide_legend(nrow = 1)) +
-    theme(title = element_text(size = title_size, face = "bold"),
-          axis.title = element_text(size = axis_title_size),
-          axis.text = element_text(size = axis_text_size),
-          legend.position = "bottom",
-          #legend.title = element_text(size = 14, face = "bold"),
-          legend.text = element_text(size = legend_text_size),
-          plot.caption = element_text(size = 10, hjust = 0.0))
-  
-  
   ## Barplot on total dissimilarity
-  # Prepare the dataset with the clusters
-  total_diss_new <- data.frame(total_diss[, c(1, 3)], 
-                               cluster = silhouette_comp[, 2])
-  
   # Create the plot
   total_diss_plot <- 
     ggplot(total_diss_new,
@@ -911,10 +904,6 @@ comp_clustering <- function (input,
                  ncol = 2, 
                  byrow = TRUE), 1, function(x) paste(x[1], "vs", x[2]))
     
-  # Reduce 'clusters' to observed comparisons (via 'comp_netplot2_order')
-  #cluster_color0 <- 
-  #  clusters[is.element(clusters[, 1], comp_netplot2_order) == TRUE, ]
-    
   # Match color with cluster (add another column)
   clusters$colour <- hue_pal()(optimal_clusters)[clusters[, 2]]
     
@@ -924,32 +913,37 @@ comp_clustering <- function (input,
 
 
   ## Collect the results
-  collect <- list(Total_dissimilarity = total_diss,
-                  Dissimilarity_table = round(data_cluster, 3),
-                  Types_used = char_type,
-                  Total_missing = paste0(total_mod, "%"),
-                  Cluster_color = cluster_color,
-                  Table_cophenetic_coefficient = table_cophenetic,
-                  Table_internal_measures = table_internal_measures)
+  # First without the table with the internal measure results
+  collect0 <- list(Total_dissimilarity = total_diss,
+                   Dissimilarity_table = round(data_cluster, 3),
+                   Types_used = char_type,
+                   Total_missing = paste0(total_mod, "%"),
+                   Cluster_color = cluster_color,
+                   Table_cophenetic_coefficient = table_cophenetic)
   
+  # Define the results based on the argument 'height'
+  collect <- if (height == TRUE) {
+    collect0
+  } else {
+    append(collect0, list(Table_internal_measures = table_internal_measures))
+  }
+
   
   ## Report results based on 'get_plots'
   results <- if (get_plots == FALSE) {
     collect
-  } else if (get_plots == TRUE & !is.null(internal_measures_panel)) {
+  } else if (height == FALSE & get_plots == TRUE) { #& !is.null(internal_measures_panel)) {
     append(collect, list(Dissimilarity_comparison = comp_diss_plot,
                          Characteristics_contribution = char_contr,
                          Total_dissimilarity_plot = total_diss_plot,
-                         #Dissimilarity_plot = diss_plot,
                          Internal_measures_panel = internal_measures_panel,
                          Silhouette_comparisons = plot_comp_silhouette))
-  } else if (get_plots == TRUE & is.null(internal_measures_panel)) {
+  } else if (height == TRUE & get_plots == TRUE) {
     append(collect, list(Dissimilarity_comparison = comp_diss_plot,
                          Characteristics_contribution = char_contr,
-                         Total_dissimilarity_plot = total_diss_plot,
-                         #Dissimilarity_plot = diss_plot,
-                         Silhouette_comparisons = plot_comp_silhouette))
+                         Total_dissimilarity_plot = total_diss_plot))
   }
+  
   
   return(suppressWarnings({print(results)}))
 }
