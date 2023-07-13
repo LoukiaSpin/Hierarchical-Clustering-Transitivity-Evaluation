@@ -236,11 +236,12 @@ distr_characteristics <- function (input,
   }
   
   
-  ## Visualise characteristics per comparison or cluster
+  ## Visualise characteristics per cluster (!is.null(cluster)) or comparison
   if (!is.null(cluster)) {
     
     ## Comparisons with their cluster
     clustered_comp <- cluster$Cluster_color[, -3]
+    
     
     ## Include a column with the cluster of the comparisons
     # Copy-paste the comparisons to a new column
@@ -275,7 +276,7 @@ distr_characteristics <- function (input,
         scale_color_manual(breaks = c("Yes", "No"),
                            values = c("red", "black"),
                            limits = c("Yes", "No")) +
-        labs(x = " ",
+        labs(x = "Clusters",
              y = " ",
              colour = "Pseudostudies") +
         guides(size = FALSE,
@@ -294,7 +295,6 @@ distr_characteristics <- function (input,
               legend.title = element_text(size = 14, face = "bold"),
               plot.caption = element_text(size = 10, hjust = 0.0))
     }
-    
     
     # Integer type
     factor_type <- function (yvar) {
@@ -325,7 +325,7 @@ distr_characteristics <- function (input,
                   size = label_size,
                   position = "stack",
                   colour = "white") +
-        labs(x = " ",
+        labs(x = "Clusters",
              y = "Count",
              fill = "Categories") +
         theme_classic() +
@@ -350,6 +350,17 @@ distr_characteristics <- function (input,
                    align = "ll",
                    caption = "Comparisons with their clusters")), 
       collapse = "\n"))
+    
+    ## Report the size of the clusters
+    message(" ")
+    message(do.call(cbind, 
+            lapply(unique(clustered_comp$cluster), 
+                   function(x) 
+                     paste0("Cluster", " ", x, ": ", 
+                            round(
+                              prop.table(
+                                table(dataset_new$`Comparison cluster`))[x] * 
+                                100, 1), "%", " "))))
     
   } else {
 
@@ -452,6 +463,12 @@ distr_characteristics <- function (input,
           if(typeof(dataset_new[, x]) == "double") double_type(x) else 
             factor_type(x)))
     names(plots) <- colnames(dataset_new)[-c(1, 2)]
+    
+    plots <- if (!is.null(cluster)) {
+      plots[names(plots) %in% c("Pseudostudies", "Comparison cluster") == FALSE] 
+    } else {
+      plots
+    }
 
     return(plots)
  })
