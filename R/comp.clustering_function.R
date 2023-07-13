@@ -606,7 +606,15 @@ comp_clustering <- function (input,
     
     
     ## Select the linkage method for the max cophenetic coefficient
-    optimal_link <- subset(table_cophenetic, results == max(results))[1]
+    optimal_dist_link <- subset(table_cophenetic, results == max(results))
+    
+    
+    ## When more distances or linkages are proper for the same cophenetic coeff.
+    if (length(unique(optimal_dist_link[, 1])) > 1) {
+      optimal_link <- optimal_dist_link[1, 1]
+    } else if (length(unique(optimal_dist_link[, 1])) == 1) {
+      optimal_link <- optimal_dist_link[1]
+    }
     
     
     ## Report the optimal linkage method 
@@ -849,6 +857,7 @@ comp_clustering <- function (input,
          y = "Total dissimilarity",
          fill = "Cluster") +
     theme_classic() +
+    coord_cartesian(ylim = c(0, 1)) +
     guides(fill = guide_legend(nrow = 1)) +
     theme(title = element_text(size = title_size, face = "bold"),
           axis.title = element_text(size = axis_title_size),
