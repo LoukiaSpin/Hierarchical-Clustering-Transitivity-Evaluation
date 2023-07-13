@@ -115,6 +115,7 @@ network_comparisons <- function(data,
                                 drug_names,
                                 total_diss, 
                                 comp_diss,
+                                optimal_dist,
                                 optimal_link,
                                 optimal_clusters,
                                 node_frame_color = "black",
@@ -149,6 +150,20 @@ network_comparisons <- function(data,
     1:length(unique(data[, 2:3]))
   } else {
     drug_names
+  }
+  
+  # 'Optimal' dissimilarity method (based on the cophenetic coefficient)
+  dist_list <- 
+    c("euclidean", "maximum", "manhattan", "canberra", "minkowski", "gower")
+  d_list <- 
+    c("'euclidean', 'maximum', 'manhattan', 'canberra', 'minkowski', 'gower'")
+  optimal_dist <- if (missing(optimal_dist)) {
+    stop("The argument 'optimal_dist' must be defined", call. = FALSE)
+  } else if (!is.element(optimal_dist, dist_list)) {
+    stop(paste("'optimal_dist' must be any of the following:", d_list), 
+         call. = FALSE)
+  } else {
+    optimal_dist
   }
   
   # 'Optimal' linkage method (based on the cophenetic coefficient)
@@ -212,7 +227,7 @@ network_comparisons <- function(data,
 
   
   ## Prepare plot (igraph package)
-  g1 <- graph(edges = poss_comp, directed = FALSE) 
+  g1 <- igraph::graph(edges = poss_comp, directed = FALSE) 
 
   
   ## Sort comparisons (nodes) by the order of 'poss_comp'
@@ -221,9 +236,13 @@ network_comparisons <- function(data,
   
   
   ## Weight each node by the corresponding total distance (normalised)
-  V(g1)$weight <- 
-    (0.40 + ((total_diss_new[, 3] - min(total_diss_new[, 3])) / 
-               (max(total_diss_new[, 3]) - min(total_diss_new[, 3])) )) * 20
+  #V(g1)$weight <- 
+  #  (0.40 + ((total_diss_new[, 3] - min(total_diss_new[, 3])) / 
+  #             (max(total_diss_new[, 3]) - min(total_diss_new[, 3])) )) * 20
+  
+  
+  ## Weight each node by the corresponding total distance
+  igraph::V(g1)$weight <- (0.40 + total_diss_new[, 3]) * 20
   
   
   ## Match comparisons with their cluster
@@ -259,12 +278,16 @@ network_comparisons <- function(data,
 
   
   ## Normalise the dissimilarity matrix of comparisons
-  norm_comp_diss <- (comp_diss_new - min(comp_diss_new)) / 
-                       (max(comp_diss_new) - min(comp_diss_new))
-  
+  norm_comp_diss <- if (optimal_dist == "gower") {
+    comp_diss_new
+  } else {
+    (comp_diss_new - min(comp_diss_new)) / 
+      (max(comp_diss_new) - min(comp_diss_new))
+  }
+
 
   ## Weight each edge by the corresponding distance (normalised)
-  E(g1)$weight <- (0.40 + norm_comp_diss) * 10
+  igraph::E(g1)$weight <- (0.40 + norm_comp_diss) * 10
   
   
   ## Name the edges according to dissimilarity value
@@ -332,13 +355,13 @@ network_comparisons <- function(data,
        vertex.frame.color = node_frame_color,
        vertex.frame.width = node_frame_width,
        vertex.shape = "circle",
-       vertex.size = V(g1)$weight,
+       vertex.size = igraph::V(g1)$weight,
        vertex.label.font = node_label_font,
        vertex.label.cex	= node_label_cex,
        vertex.label.dist = node_label_dist,
        vertex.label.color = node_label_color,
        edge.color = edge_col, 
-       edge.width = E(g1)$weight,
+       edge.width = igraph::E(g1)$weight,
        edge.lty = edge_lty,
        #edge.label = edge_name, #E(g1)$names, 
        #edge.label.color = edge_label_color,

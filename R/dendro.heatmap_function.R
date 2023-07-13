@@ -106,15 +106,7 @@ dendro_heatmap <- function (input,
   } else {
     optimal_clusters
   }
-  
-  
-  ## Define the limits of the legend based on the 'optimal_dist'
-  #limits_scale <- if(optimal_dist != "gower") {
-  #  c(min(input), max(input))
-  #} else {
-  #  c(0, 1)
-  #}
-  
+
   
   ## Function for first letter capital (Source: https://stackoverflow.com/questions/18509527/first-letter-to-upper-case)
   firstup <- function(x) {
