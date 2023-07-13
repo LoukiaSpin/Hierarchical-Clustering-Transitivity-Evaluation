@@ -212,7 +212,7 @@ network_comparisons <- function(data,
   data[, 2:3] <- matrix(drug_names[as.numeric(unlist(data[, 2:3]))], 
                         nrow = dim(data)[1],
                         ncol = 2)
-
+  
   
   ## Extract the columns with the intervention id
   pairwise <- data[, startsWith(colnames(data), "Arm")]
@@ -220,35 +220,16 @@ network_comparisons <- function(data,
   
   ## Name the comparisons (control appears second in each comparison)
   pairwise_name <- unique(paste(pairwise[, 2], "vs", pairwise[, 1]))
-
+  
   
   ## Possible pairwise comparisons (reflect matrix of total dissimilarities)
   poss_comp <- combn(pairwise_name, 2)
-
-  
-  ## Prepare plot (igraph package)
-  g1 <- igraph::graph(edges = poss_comp, directed = FALSE) 
-
-  
-  ## Sort comparisons (nodes) by the order of 'poss_comp'
-  total_diss_new <- 
-    total_diss[match(unique(c(poss_comp)), total_diss$comparison), ]
-  
-  
-  ## Weight each node by the corresponding total distance (normalised)
-  #V(g1)$weight <- 
-  #  (0.40 + ((total_diss_new[, 3] - min(total_diss_new[, 3])) / 
-  #             (max(total_diss_new[, 3]) - min(total_diss_new[, 3])) )) * 20
-  
-  
-  ## Weight each node by the corresponding total distance
-  igraph::V(g1)$weight <- (0.40 + total_diss_new[, 3]) * 20
   
   
   ## Match comparisons with their cluster
   cut_dend <- cutree(hclust(comp_diss, method = optimal_link),
                      k = optimal_clusters) 
-
+  
   
   ## Turn into data-frame
   cluster_comp0 <- data.frame(comp = rownames(data.frame(cut_dend)),
@@ -263,17 +244,41 @@ network_comparisons <- function(data,
   
   ## Colour node by cluster
   #node_col <- rev(hue_pal()(optimal_clusters))[cluster_comp[, 2]] 
-  node_col <- hue_pal()(optimal_clusters)[cluster_comp[, 2]] 
+  node_col <- hue_pal()(optimal_clusters)[sort(cluster_comp[, 2])] 
 
   
+  ## Prepare plot (igraph package)
+  g1 <- igraph::graph(edges = poss_comp, directed = FALSE) 
+  
+  
+  ## Sort nodes by cluster so that they appear sequentially
+  s <- cluster_comp[order(cluster_comp$cluster), 1]
+  g1 <- permute(g1, match(V(g1)$name, s))
+
+  
+  ## Sort comparisons (nodes) by the order of 'names(V(g1))'
+  total_diss_new <- 
+    total_diss[match(names(V(g1)), total_diss$comparison), ]
+  
+  
+  ## Weight each node by the corresponding total distance (normalised)
+  #V(g1)$weight <- 
+  #  (0.40 + ((total_diss_new[, 3] - min(total_diss_new[, 3])) / 
+  #             (max(total_diss_new[, 3]) - min(total_diss_new[, 3])) )) * 20
+  
+  
+  ## Weight each node by the corresponding total distance
+  igraph::V(g1)$weight <- (0.40 + total_diss_new[, 3]) * 20
+  
+  
   ## Possible comparisons among comparisons
-  poss_comp_comp <- combn(pairwise_name, 2)
+  poss_comp_comp <- combn(unique(c(poss_comp)), 2)
   
   
-  ## Sort comparisons of comparisons (edges) by the order of 'poss_comp'
+  ## Sort comparisons of comparisons (edges) by the order of 'poss_comp_comp'
   comp_diss_new <- rep(NA, dim(poss_comp_comp)[2])
   for (i in 1:dim(poss_comp_comp)[2]) {
-    comp_diss_new[i] <- as.matrix(comp_diss)[poss_comp_comp[1,i], poss_comp_comp[2,i]]
+    comp_diss_new[i] <- as.matrix(comp_diss)[poss_comp_comp[1, i], poss_comp_comp[2, i]]
   }
 
   
@@ -294,9 +299,9 @@ network_comparisons <- function(data,
   edge_col_num <- 
     as.vector(do.call(rbind, 
                       lapply(norm_comp_diss, 
-                             function(x) if (x < 0.25) "low" 
-                             else if (x >= 0.25 & x < 0.50) "moderate" 
-                             else if (x >= 0.50 & x < 0.75) "high"
+                             function(x) if (x <= 0.25) "low" 
+                             else if (x > 0.25 & x <= 0.50) "moderate" 
+                             else if (x > 0.50 & x <= 0.75) "high"
                              else "very high")))
   
   
