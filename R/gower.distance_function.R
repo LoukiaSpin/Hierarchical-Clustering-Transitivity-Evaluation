@@ -84,17 +84,17 @@ gower_distance <- function (input) {
   for (i in 1:dim(data)[2]) {
     
     ## First, normalise the numeric variables
-    data[, i] <- 
-      if (typeof(data[, i]) == "double" & 
-          length(na.omit(unique(data[, i]))) > 1) {  
-        (data[, i] - min(data[, i], na.rm = TRUE))/diff(range(data[, i], 
-                                                              na.rm = TRUE))
-      } else if (typeof(data[, i]) == "double" & 
-                 length(na.omit(unique(data[, i]))) == 1) { # Same value for all trials
-        rep(0, dim(data)[1])
-      } else if (typeof(data[, i]) != "double") {
-        data[, i]
-      }
+    #data[, i] <- 
+    #  if (typeof(data[, i]) == "double" & 
+    #      length(na.omit(unique(data[, i]))) > 1) {  
+    #    (data[, i] - min(data[, i], na.rm = TRUE))/diff(range(data[, i], 
+    #                                                          na.rm = TRUE))
+    #  } else if (typeof(data[, i]) == "double" & 
+    #             length(na.omit(unique(data[, i]))) == 1) { # Same value for all trials
+    #    rep(0, dim(data)[1])
+    #  } else if (typeof(data[, i]) != "double") {
+    #    data[, i]
+    #  }
    
     ## Then, get the dissimilarities per variable
     data_dist0[, i] <-
