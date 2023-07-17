@@ -153,10 +153,8 @@ network_comparisons <- function(data,
   }
   
   # 'Optimal' dissimilarity method (based on the cophenetic coefficient)
-  dist_list <- 
-    c("euclidean", "maximum", "manhattan", "canberra", "minkowski", "gower")
-  d_list <- 
-    c("'euclidean', 'maximum', 'manhattan', 'canberra', 'minkowski', 'gower'")
+  dist_list <- c("euclidean", "canberra")
+  d_list <- c("'euclidean', 'canberra'")
   optimal_dist <- if (missing(optimal_dist)) {
     stop("The argument 'optimal_dist' must be defined", call. = FALSE)
   } else if (!is.element(optimal_dist, dist_list)) {
@@ -283,12 +281,17 @@ network_comparisons <- function(data,
 
   
   ## Normalise the dissimilarity matrix of comparisons
-  norm_comp_diss <- if (optimal_dist == "gower") {
-    comp_diss_new
-  } else {
-    (comp_diss_new - min(comp_diss_new)) / 
-      (max(comp_diss_new) - min(comp_diss_new))
-  }
+  #norm_comp_diss <- if (optimal_dist == "gower") {
+  #  comp_diss_new
+  #} else {
+  #  (comp_diss_new - min(comp_diss_new)) / 
+  #    (max(comp_diss_new) - min(comp_diss_new))
+  #}
+  
+  ## Normalise the dissimilarity matrix of comparisons
+  norm_comp_diss <- (comp_diss_new - min(comp_diss_new)) / 
+    (max(comp_diss_new) - min(comp_diss_new))
+ 
 
 
   ## Weight each edge by the corresponding distance (normalised)

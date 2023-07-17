@@ -354,7 +354,7 @@ distr_characteristics <- function (input,
     ## Report the size of the clusters
     message(" ")
     message(do.call(cbind, 
-            lapply(unique(clustered_comp$cluster), 
+            lapply(sort(unique(clustered_comp$cluster)), 
                    function(x) 
                      paste0("Cluster", " ", x, ": ", 
                             round(
