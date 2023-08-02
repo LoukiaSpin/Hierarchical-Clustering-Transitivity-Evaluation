@@ -135,7 +135,10 @@
 #'   characteristics must be \strong{double} or \strong{integer} depending on
 #'   whether the corresponding characteristic refers to a quantitative or 
 #'   qualitative variable. The type mode of each column is assessed by
-#'   \code{comp_clustering} using the base function \code{typeof}.
+#'   \code{comp_clustering} using the base function \code{typeof}. Note that 
+#'   \code{comp_clustering} invites unordered and ordered variables; for the 
+#'   latter, add the argument \code{ordered = TRUE} in the base function 
+#'   \bold{factor()}.
 #'   
 #'   The interventions should be sorted in an ascending order of their 
 #'   identifier number within the trials so that the first intervention column 

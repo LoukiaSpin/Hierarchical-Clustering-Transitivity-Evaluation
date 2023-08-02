@@ -35,7 +35,10 @@
 #'   characteristics must be \strong{double} or \strong{integer} depending on
 #'   whether the corresponding characteristic refers to a quantitative or 
 #'   qualitative variable. The type mode of each column is assessed by
-#'   \code{gower_distance} using the base function \code{typeof}.
+#'   \code{gower_distance} using the base function \code{typeof}. Note that 
+#'   \code{gower_distance} invites unordered and ordered variables; for the 
+#'   latter, add the argument \code{ordered = TRUE} in the base function 
+#'   \bold{factor()}.
 #'
 #'  \code{gower_distance} is integrated in the function 
 #'   \code{\link{comp_clustering}}. 
