@@ -494,7 +494,7 @@ comp_clustering <- function (input,
   ## Violin plot on dissimilarity distribution per comparison
   comp_diss_plot <-
     ggplot(diss_dataset,
-           aes(x = reorder(comp, total),
+           aes(x = reorder(comp, total, decreasing = TRUE),
                y = diss)) +
     geom_violin(aes(fill = col),
                 trim = TRUE, #FALSE
@@ -537,7 +537,7 @@ comp_clustering <- function (input,
                       limits = c("Yes", "No"),
                       values = c("red", "#99CCFF"),
                       labels = c("Yes", "No")) +
-    labs(x = " ",
+    labs(x = "Comparisons",
          y = "Gower's dissimilarity") +
     coord_cartesian(ylim = c(0, 1)) +
     theme_classic() +
@@ -832,7 +832,16 @@ comp_clustering <- function (input,
                        num_clusters = optimal_clusters)$silhoutte_width
     
     
+    ## Barplot on total dissimilarity
+    # Prepare the dataset with the clusters
+    total_diss_new <- data.frame(total_diss[, c(1, 3)], 
+                                 cluster = silhouette_comp[, 2])
+    
+    
     ## Plot silhouette by comparison and cluster
+    # SOS: Because the bars are order by silhouette value, the colour order is 
+    # not the same with that in 'Total diss bar plot', but both plots share the 
+    # same colours for the same interventions (which is the desired)!
     plot_comp_silhouette <- 
       ggplot(silhouette_comp,
              aes(x = silhouette_new,
@@ -862,18 +871,19 @@ comp_clustering <- function (input,
            fill = "Cluster") +
       theme_classic() +
       guides(fill = guide_legend(nrow = 1)) +
+      #scale_fill_discrete(limits = levels(reorder(factor(silhouette_comp$cluster), silhouette_comp$silhouette_new)),
+      #                    labels = factor(1:max(silhouette_comp$cluster))) +
+      scale_fill_discrete(limits = levels(reorder(factor(total_diss_new$cluster), 
+                                                  total_diss_new$total_dissimilarity,
+                                                  decreasing = TRUE)),
+                          labels = factor(1:max(total_diss_new$cluster))) +
       theme(title = element_text(size = title_size, face = "bold"),
             axis.title = element_text(size = axis_title_size),
             axis.text = element_text(size = axis_text_size),
             legend.position = "bottom",
             legend.text = element_text(size = legend_text_size),
             plot.caption = element_text(size = 10, hjust = 0.0))
-    
-    
-    ## Barplot on total dissimilarity
-    # Prepare the dataset with the clusters
-    total_diss_new <- data.frame(total_diss[, c(1, 3)], 
-                                 cluster = silhouette_comp[, 2])
+
     
     ## Get the optimal clusters with their colours
     # Get the clusters
@@ -892,7 +902,9 @@ comp_clustering <- function (input,
   # Create the plot
   total_diss_plot <- 
     ggplot(total_diss_new,
-           aes(x = reorder(factor(comparison), total_dissimilarity),
+           aes(x = reorder(factor(comparison), 
+                           total_dissimilarity, 
+                           decreasing = TRUE),
                y = round(total_dissimilarity, 2),
                fill = factor(cluster))) +
     geom_bar(stat = "identity") +
@@ -907,6 +919,10 @@ comp_clustering <- function (input,
     theme_classic() +
     coord_cartesian(ylim = c(0, 1)) +
     guides(fill = guide_legend(nrow = 1)) +
+    scale_fill_discrete(limits = levels(reorder(factor(total_diss_new$cluster), 
+                                                total_diss_new$total_dissimilarity,
+                                                decreasing = TRUE)),
+                        labels = factor(1:max(total_diss_new$cluster))) +
     theme(title = element_text(size = title_size, face = "bold"),
           axis.title = element_text(size = axis_title_size),
           axis.text = element_text(size = axis_text_size),
@@ -940,7 +956,7 @@ comp_clustering <- function (input,
   # Keep unique comparisons and turn into vector 
   start_to_end <- c(t(pairwise[!duplicated(pairwise), ]))
     
-  # Get the pairwise comparisons (introcusing 'vs')
+  # Get the pairwise comparisons 
   comp_netplot2_order <- 
     apply(matrix(start_to_end, 
                  ncol = 2, 

@@ -57,10 +57,10 @@ dendro_heatmap <- function (input,
   
   ## Check the defaults
   # Dataset
-  input <- if (class(input) != "dist") {
+  diss <- if (class(input$Dissimilarity_table) != "dist") {
     stop("'input' must be of class 'dist'", call. = FALSE)
   } else {
-    input
+    input$Dissimilarity_table
   }
   
   # 'Optimal' dissimilarity method (based on the cophenetic coefficient)
@@ -92,7 +92,7 @@ dendro_heatmap <- function (input,
   }
 
   # Number of 'optimal' clusters (based on the internal measures)
-  compar <- colnames(as.matrix(input))
+  compar <- colnames(as.matrix(diss))
   optimal_clusters <- if (missing(optimal_clusters)) {
     2
     #stop("The argument 'optimal_clusters' must be defined", call. = FALSE)
@@ -126,11 +126,15 @@ dendro_heatmap <- function (input,
   ## Create heatmap with dendrogram and coloured clusters
   #library(heatmaply)
   dendro_heatmap <- 
-    heatmaply(as.matrix(input),
-              cellnote = round(as.matrix(input), 2),
+    heatmaply(as.matrix(diss),
+              cellnote = round(as.matrix(diss), 2),
               xlab = " ",
               ylab = " ",
               scale = "none",
+              Colv = reorder(as.dendrogram(hclust(diss)), 
+                             input$Total_dissimilarity[, 3], max), 
+              Rowv = reorder(as.dendrogram(hclust(diss)), 
+                             input$Total_dissimilarity[, 3], max), 
               k_col = optimal_clusters,
               k_row = optimal_clusters,
               scale_fill_gradient_fun = 
@@ -142,6 +146,7 @@ dendro_heatmap <- function (input,
                                      #limit = c(limits_scale[1], 
                                      #          limits_scale[2]))
               ))  
+  
   
   return(dendro_heatmap)
 } 
