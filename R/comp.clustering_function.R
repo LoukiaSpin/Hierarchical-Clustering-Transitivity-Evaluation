@@ -453,21 +453,21 @@ comp_clustering <- function (input,
 
   
   ## Data-frame of total dissimilarity 
-  total_diss <- data.frame(as.character(names(comparison_gower)),
-                           as.character(1:length(comparison_gower)),
-                           round(
-                             sapply(comparison_gower, 
-                                    function(x) 
-                                      sqrt(mean(na.omit(unlist(x[[1]]))^2))), 
-                             3),
-                           stringsAsFactors = FALSE)
-  colnames(total_diss) <- c("comparison", "id", "total_dissimilarity")
-  rownames(total_diss) <- as.character(names(comparison_gower))
+  total_diss0 <- data.frame(as.character(names(comparison_gower)),
+                            as.character(1:length(comparison_gower)),
+                            round(
+                              sapply(comparison_gower, 
+                                     function(x) 
+                                       sqrt(mean(na.omit(unlist(x[[1]]))^2))), 
+                              3),
+                            stringsAsFactors = FALSE)
+  colnames(total_diss0) <- c("comparison", "id", "total_dissimilarity")
+  rownames(total_diss0) <- as.character(names(comparison_gower))
   
   
   ## Data-frame on number of trials per comparison
   comp_size <- 
-    data.frame(total_diss[, c(1, 3)],
+    data.frame(total_diss0[, c(1, 3)],
                unlist(lapply(split_dataset0, function(x) dim(x)[1])))
   colnames(comp_size)[3] <- "num_trials"
   
@@ -480,7 +480,7 @@ comp_clustering <- function (input,
                                        function(x) na.omit(unlist(x[[1]])))),
                           sapply(comparison_gower, 
                                  function(x) length(na.omit(unlist(x[[1]]))))),
-               total = rep(total_diss$total_dissimilarity,
+               total = rep(total_diss0$total_dissimilarity,
                            sapply(comparison_gower, 
                                   function(x) length(na.omit(unlist(x[[1]]))))),
                comp_size = 
@@ -504,14 +504,14 @@ comp_clustering <- function (input,
                  colour = "black",
                  varwidth = TRUE) +
     geom_point() +  
-    geom_point(data = total_diss, 
+    geom_point(data = total_diss0, 
                aes(x = comparison, 
                    y = total_dissimilarity), 
                color = "red",
                size = 2.5,
                shape = 21,
                stroke = 1.5) +
-    geom_text(data = total_diss,
+    geom_text(data = total_diss0,
               aes(x = comparison, 
                   y = total_dissimilarity, 
                   label = sprintf("%0.2f", round(total_dissimilarity, 2))),
@@ -521,7 +521,7 @@ comp_clustering <- function (input,
               fontface = "bold",
               colour = "blue") +
     geom_text(data = comp_size,
-              aes(x = comparison, 
+              aes(x = comparison,  
                   y = 0, 
                   label = paste("n =", num_trials)),
               hjust = 0.5, 
@@ -549,6 +549,9 @@ comp_clustering <- function (input,
                                        ifelse(axis_x_text_angle == 0, 0.5, 1)),
           legend.position = "bottom",
           legend.text = element_text(size = legend_text_size))
+  
+  ## Sort 'total_diss' in decreasing order of total dissimilarity
+  total_diss <- total_diss0[order(total_diss0$total_dissimilarity, decreasing = TRUE),]
   
   
   ## Function for Gower's coefficient of total dissimilarities
@@ -873,9 +876,11 @@ comp_clustering <- function (input,
       guides(fill = guide_legend(nrow = 1)) +
       #scale_fill_discrete(limits = levels(reorder(factor(silhouette_comp$cluster), silhouette_comp$silhouette_new)),
       #                    labels = factor(1:max(silhouette_comp$cluster))) +
-      scale_fill_discrete(limits = levels(reorder(factor(total_diss_new$cluster), 
-                                                  total_diss_new$total_dissimilarity,
-                                                  decreasing = TRUE)),
+      #scale_fill_discrete(limits = levels(reorder(factor(total_diss_new$cluster), 
+      #                                            total_diss_new$total_dissimilarity,
+      #                                            decreasing = TRUE)),
+      #                    labels = factor(1:max(total_diss_new$cluster))) +
+      scale_fill_discrete(limits = levels(factor(total_diss_new$cluster)),
                           labels = factor(1:max(total_diss_new$cluster))) +
       theme(title = element_text(size = title_size, face = "bold"),
             axis.title = element_text(size = axis_title_size),
@@ -887,14 +892,14 @@ comp_clustering <- function (input,
     
     ## Get the optimal clusters with their colours
     # Get the clusters
-    clusters0 <- cutree(hclust(data_cluster, 
-                               method = optimal_link), 
-                        k = optimal_clusters)
+    #clusters0 <- cutree(hclust(data_cluster, 
+    #                           method = optimal_link), 
+    #                    k = optimal_clusters)
     
     # Turn into a data-frame
-    clusters <- data.frame(comparison = rownames(data.frame(clusters0)),
-                           cluster = data.frame(clusters0)[, 1])
-    rownames(clusters) <- NULL
+    #clusters <- data.frame(comparison = rownames(data.frame(clusters0)),
+    #                       cluster = data.frame(clusters0)[, 1])
+    #rownames(clusters) <- NULL
   }
   
 
@@ -919,9 +924,11 @@ comp_clustering <- function (input,
     theme_classic() +
     coord_cartesian(ylim = c(0, 1)) +
     guides(fill = guide_legend(nrow = 1)) +
-    scale_fill_discrete(limits = levels(reorder(factor(total_diss_new$cluster), 
-                                                total_diss_new$total_dissimilarity,
-                                                decreasing = TRUE)),
+    #scale_fill_discrete(limits = levels(reorder(factor(total_diss_new$cluster), 
+    #                                            total_diss_new$total_dissimilarity,
+    #                                            decreasing = TRUE)),
+    #                    labels = factor(1:max(total_diss_new$cluster))) +
+    scale_fill_discrete(limits = levels(factor(total_diss_new$cluster)),
                         labels = factor(1:max(total_diss_new$cluster))) +
     theme(title = element_text(size = title_size, face = "bold"),
           axis.title = element_text(size = axis_title_size),
@@ -941,33 +948,41 @@ comp_clustering <- function (input,
   
     
   # Get the comparison order of netplot2
-  pairwise_comb <- 
-    matrix(unlist(apply(input0[, 2:3], 1, function(x) 
-      apply(combn(na.omit(x), 2), 
-            2, function(x) x[order(x, decreasing = TRUE)]))), 
-      ncol = 2, 
-      byrow = TRUE)
+  #pairwise_comb <- 
+  #  matrix(unlist(apply(input0[, 2:3], 1, function(x) 
+  #    apply(combn(na.omit(x), 2), 
+  #          2, function(x) x[order(x, decreasing = TRUE)]))), 
+  #    ncol = 2, 
+  #    byrow = TRUE)
     
   # Assign the intervention names (if applicable)
-  pairwise <- matrix(drug_names[as.numeric(unlist(pairwise_comb))], 
-                     nrow = dim(pairwise_comb)[1],
-                     ncol = 2)
+  #pairwise <- matrix(drug_names[as.numeric(unlist(pairwise_comb))], 
+  #                   nrow = dim(pairwise_comb)[1],
+  #                   ncol = 2)
     
   # Keep unique comparisons and turn into vector 
-  start_to_end <- c(t(pairwise[!duplicated(pairwise), ]))
+  #start_to_end <- c(t(pairwise[!duplicated(pairwise), ]))
     
   # Get the pairwise comparisons 
-  comp_netplot2_order <- 
-    apply(matrix(start_to_end, 
-                 ncol = 2, 
-                 byrow = TRUE), 1, function(x) paste(x[1], "vs", x[2]))
-    
+  #comp_netplot2_order <- 
+  #  apply(matrix(start_to_end, 
+  #               ncol = 2, 
+  #               byrow = TRUE), 1, function(x) paste(x[1], "vs", x[2]))
+   
+  # Sort comparisons and clusters in decreasing order of total dissimilarity
+  #clusters_ordered <- 
+  #  total_diss_new[order(total_diss_new$total_dissimilarity, decreasing = TRUE), ]
+  
   # Match color with cluster (add another column)
-  clusters$colour <- hue_pal()(optimal_clusters)[clusters[, 2]]
-    
+  #clusters$colour <- hue_pal()(optimal_clusters)[clusters[, 2]]
+  cluster_color <- data.frame(comparison = total_diss_new[, 1],
+                              cluster = total_diss_new[, 3],
+                              colour = hue_pal()(optimal_clusters)[total_diss_new[, 3]])
+  
+  
   # Order the data-frame by 'comp_netplot2_order'
-  cluster_color <- 
-    clusters[match(comp_netplot2_order, clusters$comparison),]
+  #cluster_color <- 
+  #  clusters[match(comp_netplot2_order, clusters$comparison),]
 
 
   ## Collect the results
