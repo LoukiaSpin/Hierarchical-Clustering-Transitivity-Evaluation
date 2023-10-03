@@ -2,7 +2,7 @@
 #' (Comparisons' comparability for transitivity evaluation)
 #' 
 #' @description 
-#'   \code{network_comparisons} offers an  alternative visualisation of the 
+#'   \code{network_comparisons} offers an alternative visualisation of the 
 #'   dendrogram with amalgamated heatmap. Presenting the comparisons in a 
 #'   circular layout, typically seen in networks, facilitates interpretation of
 #'   the clustering results in the context of transitivity evaluation. It is
@@ -97,7 +97,8 @@ network_comparisons <- function(data,
   
   
   # Select the distances for the max cophenetic coefficient
-  optimal_dist_link <- subset(data$Table_cophenetic_coefficient, results == max(results))
+  optimal_dist_link <- subset(data$Table_cophenetic_coefficient, 
+                              results == max(results))
   
   
   # When more distances are proper for the same cophenetic coeff.
@@ -110,7 +111,7 @@ network_comparisons <- function(data,
   }
 
 
-  # Number of 'optimal' clusters (based on the internal measures)
+  # Number of 'optimal' clusters 
   optimal_clusters <- length(unique(data$Cluster_color[, 2]))
   
   

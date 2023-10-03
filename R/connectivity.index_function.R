@@ -1,8 +1,9 @@
 #' Function for the Connectivity index
+#' (Comparisons' comparability for transitivity evaluation)
 #' 
 #' @description
 #'   \code{connectivity_index} calculates the connectivity index for a specific
-#'   dissimilarity measure, number of clusters and neighbouring comparisons. 
+#'   linkage method, number of clusters and neighbouring comparisons. 
 #'   
 #' @param input An object of 'dist' class. It is a lower off-diagonal matrix 
 #'   with the dissimilarities of all pairs of comparisons.  
@@ -22,7 +23,7 @@
 #'   \code{connectivity_index} is integrated in the function 
 #'   \code{\link{internal_measures_plot}}. The index ranges from zero to 
 #'   infinity with smaller values indicating higher connectivity for the 
-#'   selected number of clusters.
+#'   selected number of clusters, which is desired.
 #'   
 #'   \code{connectivity_index} uses the \code{\link[stats:cutree]{cutree}} 
 #'   function (alongside the \code{\link[stats:hclust]{hclust}} function) to cut 

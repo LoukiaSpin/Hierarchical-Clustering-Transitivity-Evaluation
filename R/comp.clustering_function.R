@@ -1,10 +1,11 @@
-#' End-user-ready results for hierarchical clustering of comparisons
+#' End-user-ready results for informative and heuristic clustering of comparisons
 #' (Comparisons' comparability for transitivity evaluation)
 #'
 #' @description
 #'   \code{comp_clustering} hosts a toolkit of functions that facilitates 
-#'   conducting, visualising and evaluating hierarchical agglomerative
-#'   clustering of observed comparisons of interventions for a specific network.
+#'   conducting, visualising and evaluating informative and heuristic (hierarchical 
+#'   agglomerative) clustering of observed comparisons of interventions for a 
+#'   specific network and set of characteristics.
 #'  
 #' @param input A data-frame in the long arm-based format. Two-arm trials occupy
 #'   one row in the data-frame. Multi-arm trials occupy as many rows as the
@@ -18,11 +19,11 @@
 #'   position of the characteristics in \code{input}, and (ii) a character 
 #'   vector with the names of the characteristics, as they are wished to 
 #'   appear in the title of the plots. This argument is optional, in case the
-#'   user wants to improve the appearance of the titles.
-#' @param height Logical with values \code{TRUE} for cutting the dendrogram at 
-#'   height 0.249 and \code{FALSE} for allowing the user to define the number of 
-#'   clusters via the argument \code{optimal_clusters}. The default argument is 
-#'   \code{FALSE}.
+#'   user wants to control the appearance of the titles.
+#' @param height Logical with \code{TRUE} for performing heuristic clustering 
+#'   and \code{FALSE} for performing heuristic clustering, thus, allowing the 
+#'   user to define the number of clusters via the argument \code{optimal_clusters}. 
+#'   The default argument is \code{FALSE}.
 #' @param num_neighb A positive integer for the number of neighbouring 
 #'   comparisons that is found in the \code{\link{connectivity_index}} and 
 #'   \code{\link{internal_measures_plot}} functions. It takes values from two to 
@@ -77,45 +78,56 @@
 #'   Initially, \code{comp_clustering} prints on the console the following 
 #'   messages: the number of observed comparisons (and number of single-study 
 #'   comparisons, if any); the number of dropped characteristics due to many 
-#'   missing data; the dissimilarity measure and the linkage method selected
-#'   (based on the cophenetic correlation coefficient). Then, the function 
+#'   missing data; the maximum value of the cophenetic correlation coefficient; 
+#'   the optimal dissimilarity measure and optimal linkage method selected
+#'   based on the cophenetic correlation coefficient. Then, the function 
 #'   returns the following list of elements:
 #'   \item{Total_dissimilarity}{A data-frame on the total dissimilarity for each 
-#'   observed comparison.}
-#'   \item{Dissimilarity_table}{A lower off-diagonal matrix of 'dist' class 
-#'   with the dissimilarities of all pairs of comparisons.}
+#'   observed comparison. The data-frame has been sorted in decreasing order of 
+#'   the total dissimilarity.}
 #'   \item{Types_used}{A data-frame with type mode (i.e., double or integer) of 
 #'   each characteristic.}
 #'   \item{Total_missing}{The percentage of missing cases in the dataset,
-#'   calculated as the ratio of missing cases to the product of the number of
-#'   studies with the number of characteristics.}
+#'   calculated as the ratio of total missing cases to the product of the number 
+#'   of studies with the number of characteristics.}
 #'   \item{Cluster_color}{A data-frame on the number and color of the cluster 
-#'   assigned to each comparison. This can be used in the \code{\link{netplot}} 
-#'   function to colour the edges according to the cluster assigned.}
-#'   \item{Table_cophenetic_coefficient}{A data-frame on the cophenetic 
-#'   correlation coefficient for all pairwise combinations of six dissimilarity 
-#'   measures (Euclidean, maximum, Manhattan, Canberra, Minkowski, and Gower) 
-#'   with eight linkage methods (Ward's two versions, single, complete, average, 
-#'   Mcquitty, median and centroid). The data-frame has been sorted in 
-#'   decreasing order of the cophenetic correlation coefficient).}
-#'   \item{Table_internal_measures}{A data-frame the connectivity index, 
+#'   assigned to each comparison. This can be used in the 
+#'   \code{\link{network_comparisons}} function to colour the edges according to 
+#'   the cluster assigned. The data-frame has been sorted in decreasing order of 
+#'   the total dissimilarity.}
+#'   \item{Dissimilarity_table}{A lower off-diagonal matrix of 'dist' class 
+#'   with the dissimilarities of all pairs of comparisons. The row and column 
+#'   names has been sorted in decreasing order of the total dissimilarity.}
+#'   \item{Table_internal_measures}{A data-frame with the connectivity index, 
 #'   silhouette width, and Dunn index for a range of 2 to P-1 clusters, with P
 #'   being the number of comparisons.}
+#'   \item{Table_cophenetic_coefficient}{A data-frame on the cophenetic 
+#'   correlation coefficient for all pairwise combinations of two dissimilarity 
+#'   measures (Euclidean, and Canberra) with eight linkage methods (Ward's two 
+#'   versions, single, complete, average, Mcquitty, median and centroid). The 
+#'   data-frame has been sorted in decreasing order of the cophenetic correlation 
+#'   coefficient.}
+#'   \item{Optimal_dist}{The optimal dissimilarity measure (Euclidean or Canberra) 
+#'   based on the cophenetic correlation coefficient.}
+#'   \item{Optimal_link}{The optimal linkage method (ward.D, ward.D2, single, 
+#'   complete, average, mcquitty, median, or centroid) based on the cophenetic 
+#'   correlation coefficient.}
 #'
 #'   If \code{get_plots = FALSE} only the list of elements mentioned above is 
 #'   returned. If \code{get_plots = TRUE}, \code{comp_clustering} returns a 
 #'   series of plots in addition to the list of elements mentioned above:
 #'   \item{Dissimilarity_comparison}{A violin plot with integrated box plots and
 #'   dots on the study dissimilarities per comparison (x-axis). Violins are 
-#'   sorted in ascending order of the total dissimilarity (red point).}
-#'   \item{Total_dissimilarity_plot}{A barplot on the total dissimilarity of
-#'   comparisons. Bars are sorted in ascending order of the total dissimilarity
-#'   and have been coloured based on the cluster they belong, with the clusters
-#'   referring to the optimal partitioning determined by the argument 
-#'   \code{optimal_clusters}.}
+#'   sorted in descending order of the total dissimilarity (red point).}
 #'   \item{Characteristics_contribution}{A bubble plot on the percentage of 
 #'   average contribution of each characteristic (x-axis) to dissimilarities of 
 #'   pairs of studies in the corresponding comparison (y-axis).}
+#'   \item{Total_dissimilarity_plot}{A barplot on the total dissimilarity of
+#'   comparisons. Bars are sorted in descending order of the total dissimilarity
+#'   and have been coloured based on the cluster they belong, with the clusters
+#'   referring to the optimal partitioning determined by the argument 
+#'   \code{optimal_clusters}, when heuristic clustering is performed, or based 
+#'   on the informative clustering.}
 #'   \item{Internal_measures_panel}{A panel of profile plots on the connectivity
 #'   index, silhouette width, and Dunn index for a range of 2 to P-1 clusters, 
 #'   with P being the number of comparisons. The candidate optimal number of
@@ -124,7 +136,7 @@
 #'   width for each comparison. The comparisons are sorted in descending order 
 #'   of the silhouette width and have been coloured based on the cluster they 
 #'   belong, with the clusters referring to the optimal partitioning. For 
-#'   comparisons with zero silhouette width we added 0.01 (an arbitrary very 
+#'   comparisons with zero silhouette width, 0.01 is added (an arbitrary very 
 #'   small number) to make visible the colour of the corresponding bars.}
 #' 
 #' @details
@@ -143,15 +155,16 @@
 #'   The interventions should be sorted in an ascending order of their 
 #'   identifier number within the trials so that the first intervention column 
 #'   (second column in \code{input}) is the control arm for every pairwise 
-#'   comparison. This is important to ensure consistency in the order of 
-#'   interventions within the comparisons obtained from the other related 
-#'   functions and to colour the correct comparisons via the 
-#'   \code{\link{netplot}} function.
+#'   comparison. This is important to ensure consistency in the intervention 
+#'   order within the comparisons obtained from the other related functions and 
+#'   to colour the correct comparisons via the \code{\link{network_comparisons}} 
+#'   function.
 #'   
 #'   \code{comp_clustering} excludes from the dataset the following type of
 #'   characteristics: (i) completely missing characteristics and 
 #'   (ii) characteristics with missing values in all but one studies for at 
-#'   least one comparison. Then it proceeds with the clustering process.
+#'   least one non-single-stufy comparison. Then it proceeds with the clustering 
+#'   process.
 #'   
 #'   The cophenetic correlation coefficient is calculated using the 
 #'   \code{\link[stats:cophenetic]{cophenetic}} function alongside the
@@ -159,7 +172,7 @@
 #'   found in the latter and the \code{\link[stats:hclust]{hclust}} function for 
 #'   selected linkage methods.
 #'
-#'  \code{comp_clustering} can be used only for network with at least three
+#'  \code{comp_clustering} can be used only for a network with at least three
 #'   comparisons. Otherwise, the execution of the function will be stopped and 
 #'   an error message will be printed on the R console. 
 #'
@@ -169,7 +182,7 @@
 #'  \code{\link{connectivity_index}}, 
 #'  \code{\link[stats:cophenetic]{cophenetic}}, \code{\link[stats:dist]{dist}},
 #'  \code{\link[stats:hclust]{hclust}}, \code{\link{internal_measures_plot}},
-#'  \code{\link{netplot}}
+#'  \code{\link{network_comparisons}}
 #'
 #' @references
 #' Gower J. General Coefficient of Similarity and Some of Its Properties.
@@ -363,19 +376,6 @@ comp_clustering <- function (input,
   } 
   
   
-  ## Default (to be used in 'connectivity_index')
-  #num_neighb <- if (missing(num_neighb)) {
-  #  #message(paste("- num_neighb =", round(length(split_dataset) / 2, 0), 
-  #  #              "was used (default)"))
-  #  round(length(split_dataset) / 2, 0)
-  #} else if (num_neighb > length(split_dataset) || num_neighb < 2) {
-  #  stop(paste0("'num_neighb' must range from 2 to", " ", 
-  #              length(split_dataset) - 1, "."), call. = FALSE)
-  #} else {
-  #  num_neighb
-  #}
-  
-  
   ## Calculate the Gower dissimilarity among trials by comparison 
   comparison_gower <- lapply(split_dataset, 
                              function(x) {gower_distance(input = x)})
@@ -554,91 +554,13 @@ comp_clustering <- function (input,
   total_diss <- total_diss0[order(total_diss0$total_dissimilarity, decreasing = TRUE),]
   
   
-  ## Function for Gower's coefficient of total dissimilarities
-  #gower_fun <- function (diss_mat) {
-  #  
-  #  # Calculate Gower dissimilarity among comparisons
-  #  data_cluster0 <- if (max(diss_mat[, 3]) == 0) {
-  #    stop("Dissimilarity matrix is zero for all comparisons.", call. = FALSE)
-  #  } else {
-  #    abs(apply(combn(diss_mat[, 3], 2), 2, diff)) / 
-  #      diff(range(diss_mat[, 3]))
-  #  }
-  # 
-  #  # Turn Gower dissimilarity into a lower triangle
-  #  comp_gower <- matrix(NA, nrow = dim(diss_mat)[1], ncol = dim(diss_mat)[1])
-  #  comp_gower[lower.tri(comp_gower, diag = FALSE)] <- data_cluster0
-  #  
-  #  # Remove redundant row and column
-  #  data_cluster0 <- as.data.frame(comp_gower)
-  #  rownames(data_cluster0) <- diss_mat[, 1]
-  #  colnames(data_cluster0) <- diss_mat[, 1]
-  #  
-  #  # Turn it into 'as.dist' object 
-  #  data_cluster <- 
-  #    as.dist(apply(data_cluster0, 2, function(x) ifelse(is.na(x) == TRUE, 0, x)))
-  #  
-  #  return(data_cluster)
-  #}
-  
-  
   ## Linkage methods of the 'hclust' function
   linkage_methods <- c("ward.D", "ward.D2", "single", "complete", "average", 
                        "mcquitty", "median", "centroid")
   
   
-  ## Different route depending on whether we choose the height or not
-  if (height == TRUE) {
-    
-    # Dissimilarity matrix among comparisons
-    #data_cluster <- gower_fun(total_diss)
-    
-    # Cophenetic correlation coefficient for different linkage methods
-    #table_coph0 <- 
-    #  data.frame(
-    #    linkage_methods,
-    #    do.call(rbind, 
-    #            lapply(linkage_methods, 
-    #                   function(x) round(cor(data_cluster,
-    #                                         cophenetic(hclust(data_cluster,
-    #                                                           method = x))), 3)
-    #                            )
-    #                     )
-    #             )
-    #colnames(table_coph0) <- c("linkage", "results")
-    
-    #table_cophenetic <- 
-    #  table_coph0[order(table_coph0$results, decreasing = TRUE), ]
-    
-    
-    ## Select the linkage method for the max cophenetic coefficient
-    #optimal_dist_link <- subset(table_cophenetic, results == max(results))
-    
-    
-    ## When more distances or linkages are proper for the same cophenetic coeff.
-    #if (length(unique(optimal_dist_link[, 1])) > 1) {
-    #  optimal_link <- optimal_dist_link[1, 1]
-    #} else if (length(unique(optimal_dist_link[, 1])) == 1) {
-    #  optimal_link <- optimal_dist_link[1]
-    #}
-    
-    
-    ## Report the optimal linkage method 
-    #message(paste("- Cophenetic coefficient:", max(table_cophenetic[, 2])))
-    #message(paste("- Gower's dissimilarity was used"))
-    #message(paste("- Optimal linkage method:", optimal_link))
-    
-    
-    ## Get the clusters after cutting at height of 0.249 (low heterogeneity)
-    #clustered_comp0 <- cutree(hclust(gower_fun(total_diss), 
-    #                                 method = optimal_link), 
-    #                          h = 0.25)
-    
-    
-    ## Data-frame of comparisons and corresponding cluster
-    #clustered_comp <- cbind(comp = names(clustered_comp0), 
-    #                        cluster = as.data.frame(clustered_comp0))
-    #rownames(clustered_comp) <- NULL
+  ## Different route depending on whether we choose informative or heuristic clustering
+  if (height == TRUE) { # Informative clustering
     
     ## Get the clusters per comparison
     clusters0 <- 
@@ -659,12 +581,11 @@ comp_clustering <- function (input,
     optimal_clusters <- length(unique(clusters0))
     
     
-    ## Barplot on total dissimilarity
-    # Prepare the dataset with the clusters
+    ## Barplot on total dissimilarity (Prepare the dataset with the clusters)
     total_diss_new <- data.frame(total_diss[, c(1, 3)], 
                                  cluster = clusters[, 2])
     
-  } else {
+  } else { # Heuristic clustering
     
     ## Checking further defaults
     # Number of 'optimal' clusters (based on the internal measures)
@@ -685,8 +606,6 @@ comp_clustering <- function (input,
     
     ## Default (to be used in 'connectivity_index')
     num_neighb <- if (missing(num_neighb)) {
-      #message(paste("- num_neighb =", round(length(split_dataset) / 2, 0), 
-      #              "was used (default)"))
       round(length(split_dataset) / 2, 0)
     } else if (num_neighb > length(split_dataset) || num_neighb < 2) {
       stop(paste0("'num_neighb' must range from 2 to", " ", 
@@ -697,8 +616,6 @@ comp_clustering <- function (input,
     
     
     ## Distance methods of the 'dist' function
-    #distance_methods <- 
-    #  c("euclidean", "maximum", "manhattan", "canberra", "minkowski")
     distance_methods <- c("euclidean", "canberra")
     
     
@@ -719,23 +636,9 @@ comp_clustering <- function (input,
                                                  method = y))), 3),
                      x = as.character(poss_comb$distance), 
                      y = as.character(poss_comb$linkage)))
-    
-    # Cophenetic coefficient of Gower for different linkage methods
-    #table_coph_gower <-
-    #  data.frame(distance = rep("gower", length(linkage_methods)),
-    #             linkage = linkage_methods,
-    #             results = 
-    #               sapply(linkage_methods, 
-    #                      function(x) round(cor(gower_fun(total_diss), 
-    #                                            cophenetic(hclust(
-    #                                              gower_fun(total_diss),
-    #                                              method = x))), 3)))
-    #rownames(table_coph_gower) <- NULL
+
     
     # Bring both tables together
-    #table_cophenetic0 <- rbind(table_coph, table_coph_gower)
-    #table_cophenetic <- 
-    #  table_cophenetic0[order(table_cophenetic0$results, decreasing = TRUE), ]
     table_cophenetic <- 
       table_coph[order(table_coph$results, decreasing = TRUE), ]
     
@@ -743,25 +646,6 @@ comp_clustering <- function (input,
     ## Select the distance and linkage methods for the max cophenetic coefficient
     optimal_dist_link <- subset(table_cophenetic, results == max(results))
     
-    
-    ## When more distances or linkages are proper for the same cophenetic coeff.
-    #if (length(unique(optimal_dist_link[, 1])) > 1 & 
-    #    is.element("gower", optimal_dist_link[, 1])) {
-    #  optimal_dist <- "gower"
-    #  optimal_link <- 
-    #    optimal_dist_link[optimal_dist_link$distance == optimal_dist, 2][1] #optimal_dist_link[1, 2]
-    #} else if (length(unique(optimal_dist_link[, 1])) > 1 & 
-    #           !is.element("gower", optimal_dist_link[, 1])) {
-    #  optimal_dist <- optimal_dist_link[1, 1]
-    #  optimal_link <- 
-    #    optimal_dist_link[optimal_dist_link$distance == optimal_dist, 2][1]#optimal_dist_link[1, 2]
-    #} else if (length(unique(optimal_dist_link[, 1])) == 1) {
-    #  optimal_dist <- unique(optimal_dist_link[, 1])
-    #  optimal_link <- optimal_dist_link[1, 2]
-    #} else if (dim(optimal_dist_link[, 1])[1] == 1) {
-    #  optimal_dist <- optimal_dist_link[1]
-    #  optimal_link <- optimal_dist_link[2]
-    #}
     
     ## When more distances or linkages are proper for the same cophenetic coeff.
     if (length(unique(optimal_dist_link[, 1])) > 1) {
@@ -781,16 +665,7 @@ comp_clustering <- function (input,
     message(paste("- Cophenetic coefficient:", max(table_cophenetic[, 3])))
     message(paste("- Optimal dissimilarity measure:", optimal_dist))
     message(paste("- Optimal linkage method:", optimal_link))
-    
-    
-    ## Dissimilarity matrix of comparisons for the optimal dissimilarity measure
-    #data_cluster <- if (optimal_dist != "gower") {
-    #  dist(matrix(total_diss[, 3], 
-    #              dimnames = list(rownames(total_diss))), 
-    #       method = optimal_dist)
-    #} else {
-    #  gower_fun(total_diss)
-    #}
+
     
     ## Dissimilarity matrix of comparisons for the optimal dissimilarity measure
     data_cluster <- 
@@ -874,12 +749,6 @@ comp_clustering <- function (input,
            fill = "Cluster") +
       theme_classic() +
       guides(fill = guide_legend(nrow = 1)) +
-      #scale_fill_discrete(limits = levels(reorder(factor(silhouette_comp$cluster), silhouette_comp$silhouette_new)),
-      #                    labels = factor(1:max(silhouette_comp$cluster))) +
-      #scale_fill_discrete(limits = levels(reorder(factor(total_diss_new$cluster), 
-      #                                            total_diss_new$total_dissimilarity,
-      #                                            decreasing = TRUE)),
-      #                    labels = factor(1:max(total_diss_new$cluster))) +
       scale_fill_discrete(limits = levels(factor(total_diss_new$cluster)),
                           labels = factor(1:max(total_diss_new$cluster))) +
       theme(title = element_text(size = title_size, face = "bold"),
@@ -888,18 +757,6 @@ comp_clustering <- function (input,
             legend.position = "bottom",
             legend.text = element_text(size = legend_text_size),
             plot.caption = element_text(size = 10, hjust = 0.0))
-
-    
-    ## Get the optimal clusters with their colours
-    # Get the clusters
-    #clusters0 <- cutree(hclust(data_cluster, 
-    #                           method = optimal_link), 
-    #                    k = optimal_clusters)
-    
-    # Turn into a data-frame
-    #clusters <- data.frame(comparison = rownames(data.frame(clusters0)),
-    #                       cluster = data.frame(clusters0)[, 1])
-    #rownames(clusters) <- NULL
   }
   
 
@@ -924,10 +781,6 @@ comp_clustering <- function (input,
     theme_classic() +
     coord_cartesian(ylim = c(0, 1)) +
     guides(fill = guide_legend(nrow = 1)) +
-    #scale_fill_discrete(limits = levels(reorder(factor(total_diss_new$cluster), 
-    #                                            total_diss_new$total_dissimilarity,
-    #                                            decreasing = TRUE)),
-    #                    labels = factor(1:max(total_diss_new$cluster))) +
     scale_fill_discrete(limits = levels(factor(total_diss_new$cluster)),
                         labels = factor(1:max(total_diss_new$cluster))) +
     theme(title = element_text(size = title_size, face = "bold"),
@@ -947,44 +800,12 @@ comp_clustering <- function (input,
                 dim(input_new0[, -c(1, 2)])[2])) * 100, 2)
   
     
-  # Get the comparison order of netplot2
-  #pairwise_comb <- 
-  #  matrix(unlist(apply(input0[, 2:3], 1, function(x) 
-  #    apply(combn(na.omit(x), 2), 
-  #          2, function(x) x[order(x, decreasing = TRUE)]))), 
-  #    ncol = 2, 
-  #    byrow = TRUE)
-    
-  # Assign the intervention names (if applicable)
-  #pairwise <- matrix(drug_names[as.numeric(unlist(pairwise_comb))], 
-  #                   nrow = dim(pairwise_comb)[1],
-  #                   ncol = 2)
-    
-  # Keep unique comparisons and turn into vector 
-  #start_to_end <- c(t(pairwise[!duplicated(pairwise), ]))
-    
-  # Get the pairwise comparisons 
-  #comp_netplot2_order <- 
-  #  apply(matrix(start_to_end, 
-  #               ncol = 2, 
-  #               byrow = TRUE), 1, function(x) paste(x[1], "vs", x[2]))
-   
-  # Sort comparisons and clusters in decreasing order of total dissimilarity
-  #clusters_ordered <- 
-  #  total_diss_new[order(total_diss_new$total_dissimilarity, decreasing = TRUE), ]
-  
-  # Match color with cluster (add another column)
-  #clusters$colour <- hue_pal()(optimal_clusters)[clusters[, 2]]
+  ## Data-frame with the colour and cluster per comparison
   cluster_color <- data.frame(comparison = total_diss_new[, 1],
                               cluster = total_diss_new[, 3],
                               colour = hue_pal()(optimal_clusters)[total_diss_new[, 3]])
   
   
-  # Order the data-frame by 'comp_netplot2_order'
-  #cluster_color <- 
-  #  clusters[match(comp_netplot2_order, clusters$comparison),]
-
-
   ## Collect the results
   # First without the table with the internal measure results
   collect0 <- list(Total_dissimilarity = total_diss,
@@ -998,7 +819,9 @@ comp_clustering <- function (input,
   } else {
     append(collect0, list(Dissimilarity_table = round(data_cluster, 3),
                           Table_internal_measures = table_internal_measures,
-                          Table_cophenetic_coefficient = table_cophenetic))
+                          Table_cophenetic_coefficient = table_cophenetic,
+                          Optimal_dist = optimal_dist,
+                          Optimal_link = optimal_link))
   }
 
   

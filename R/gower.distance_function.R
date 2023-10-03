@@ -1,11 +1,12 @@
 #' Gower's dissimilarity measure
+#' (Comparisons' comparability for transitivity evaluation)
 #'
 #' @description
 #'   \code{gower_distance} calculate the Gower's dissimilarity coefficient for a 
 #'   set of two or more trials investigating the same pairwise comparison of 
-#'   intervention, considering several characteristics measured at trial level. 
-#'   It takes values from 0 to 1, with 0 implying similarity and 1 high 
-#'   dissimilarity.
+#'   interventions, considering several characteristics measured at trial level. 
+#'   It takes values from 0 to 1, with 0 implying complete similarity and 1 
+#'   complete dissimilarity.
 #'
 #' @param input A data-frame in the long arm-based format. Two-arm trials occupy
 #'   one row in the data-frame. Multi-arm trials occupy as many rows as the
@@ -17,12 +18,12 @@
 #' @return 
 #'   \code{gower_distance} returns the following list of elements:
 #'   \item{Dissimilarity_table}{A lower off-diagonal matrix of 'dist' class 
-#'   with the dissimilarities of all pairs of trials}
+#'   with the dissimilarities of all pairs of trials.}
 #'   \item{Types_used}{A data-frame with type mode (i.e., double or integer) of 
 #'   each characteristic.}
 #'   \item{Total_missing}{The percentage of missing cases in the comparison,
-#'   calculated as the ratio of missing cases to the product of the number of
-#'   studies with the number of characteristics.}
+#'   calculated as the ratio of total missing cases to the product of the number 
+#'   of studies with the number of characteristics.}
 #'   \item{Charact_contribution}{A numeric vector with the percentage of average 
 #'   contribution of each characteristic to dissimilarities of pairs of studies 
 #'   in each observed comparison.}
@@ -85,19 +86,6 @@ gower_distance <- function (input) {
   
   ## Obtain the distances and deltas per variable
   for (i in 1:dim(data)[2]) {
-    
-    ## First, normalise the numeric variables
-    #data[, i] <- 
-    #  if (typeof(data[, i]) == "double" & 
-    #      length(na.omit(unique(data[, i]))) > 1) {  
-    #    (data[, i] - min(data[, i], na.rm = TRUE))/diff(range(data[, i], 
-    #                                                          na.rm = TRUE))
-    #  } else if (typeof(data[, i]) == "double" & 
-    #             length(na.omit(unique(data[, i]))) == 1) { # Same value for all trials
-    #    rep(0, dim(data)[1])
-    #  } else if (typeof(data[, i]) != "double") {
-    #    data[, i]
-    #  }
    
     ## Then, get the dissimilarities per variable
     data_dist0[, i] <-

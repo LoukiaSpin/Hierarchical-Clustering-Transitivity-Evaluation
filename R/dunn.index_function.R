@@ -1,8 +1,9 @@
 #' Function for the Dunn index
+#' (Comparisons' comparability for transitivity evaluation)
 #' 
 #' @description
-#'   \code{dunn_index} calculates the Dunn index for a specific dissimilarity 
-#'   measure and number of clusters. 
+#'   \code{dunn_index} calculates the Dunn index for a specific linkage method 
+#'   and number of clusters. 
 #'   
 #' @param input An object of 'dist' class. It is a lower off-diagonal matrix 
 #'   with the dissimilarities of all pairs of comparisons.  
@@ -121,9 +122,6 @@ dunn_index <- function (input,
   
   
   ## Largest distance between observations found in the same cluster
-  ## 'is.na(same_cluster) == TRUE' in clusters with one observation
-  #max_intra_cluster <- ifelse(all(is.na(same_cluster) == TRUE), 0,
-  #                            max(same_cluster_dist, na.rm = TRUE))
   max_intra_cluster0 <- max(same_cluster_dist, na.rm = TRUE)
   
   
@@ -149,8 +147,6 @@ dunn_index <- function (input,
 
   
   ## Dunn index
-  #dunn_value <- ifelse(all(is.na(same_cluster) == TRUE), 0, 
-  #                     min_inter_cluster / max_intra_cluster)
   dunn_value <- min_inter_cluster / max_intra_cluster
   
   return(dunn_value)

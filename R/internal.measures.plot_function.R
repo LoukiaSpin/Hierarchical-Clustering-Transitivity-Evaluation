@@ -16,11 +16,11 @@
 #'   \code{"ward.D2"}, \code{"single"}, \code{"complete"}, \code{"average"},
 #'   \code{"mcquitty"}, \code{"median"}, or \code{"centroid"} for the optimal
 #'   linkage method, corresponding to the highest cophenetic correlation
-#'   coefficient. 
+#'   coefficient value. 
 #'
 #' @return 
 #'   \code{internal_measures_plot} returns the following list of elements:
-#'   \item{Table_internal_measures}{A data-frame the connectivity index, 
+#'   \item{Table_internal_measures}{A data-frame of the connectivity index, 
 #'   silhouette width, and Dunn index for a range of 2 to P-1 clusters, with P
 #'   being the number of comparisons.}
 #'   \item{Internal_measures_panel}{A panel of profile plots on the connectivity
@@ -269,4 +269,3 @@ internal_measures_plot <- function (input,
   
   return(results)
 }
-

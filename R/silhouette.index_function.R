@@ -1,9 +1,10 @@
 #' Function for the silhouette width and silhouette plot
+#' (Comparisons' comparability for transitivity evaluation)
 #' 
 #' @description
 #'   \code{silhouette_index} calculates the average silhouette width and the
-#'   comparison-specific silhouette widths for a specific dissimilarity 
-#'   measure and number of clusters. 
+#'   comparison-specific silhouette widths for a specific linkage method and 
+#'   number of clusters. 
 #'   
 #' @param input An object of 'dist' class. It is a lower off-diagonal matrix 
 #'   with the dissimilarities of all pairs of comparisons.  
@@ -26,7 +27,7 @@
 #'   \code{\link{internal_measures_plot}}. Silhouette width ranges from minus to 
 #'   plus one, with values closer to 1 indicating higher compactness and 
 #'   separation for the selected clustering partition, whilst values closer to 
-#'   -1 indicate possible misclassification .
+#'   -1 indicate possible misclassification.
 #'   
 #'   \code{silhouette_index} uses the \code{\link[stats:cutree]{cutree}} 
 #'   function (alongside the \code{\link[stats:hclust]{hclust}} function) to cut 
@@ -139,25 +140,11 @@ silhouette_index <- function (input,
     ifelse(abs(close_to_further_new - close_to_further_new[, 1]) > 0, 
            close_to_further_new, NA) 
   
-  # Correction when one cluster is checked
-  #diff_cluster <- if(all(is.na(diff_cluster0))) {
-  #  close_to_further_new[, -1]
-  #} else {
-  #  diff_cluster0
-  #}
-  
   
   ## Dummy indicator
   diff_cluster_dummy <- 
     ifelse(abs(close_to_further_new - close_to_further_new[, 1]) > 0, 1, NA)
-  
-  # Correction when one cluster is checked
-  #diff_cluster_dummy <- if(all(is.na(diff_cluster_dummy0))) {
-  #  close_to_further_new[, -1]
-  #} else {
-  #  diff_cluster_dummy0[, -1]
-  #}
-  
+
   
   ## Get distances
   diff_cluster_dist <- close_to_further_dist * diff_cluster_dummy

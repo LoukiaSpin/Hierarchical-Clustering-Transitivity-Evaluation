@@ -17,7 +17,7 @@
 #'   position of the characteristics in \code{input}, and (ii) a character 
 #'   vector with the names of the characteristics, as they are wished to 
 #'   appear in the title of the plots. This argument is optional, in case the
-#'   user wants to improve the appearance of the titles.
+#'   user wants to control the appearance of the titles.
 #' @param label_size A positive integer for the font size of labels in the 
 #'   plots. \code{label_size} determines the size argument found in the geom's 
 #'   aesthetic properties in the R-package 
@@ -75,8 +75,7 @@
 #'   (second column in \code{input}) is the control arm for every pairwise 
 #'   comparison. This is important to ensure consistency in the order of 
 #'   interventions within the comparisons obtained from the other related 
-#'   functions and to colour the correct comparisons via the \code{network} 
-#'   function.
+#'   functions.
 #'   
 #' @author {Loukia M. Spineli}
 #'
