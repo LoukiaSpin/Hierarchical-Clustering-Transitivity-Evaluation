@@ -3,9 +3,8 @@
 ## Description of the repository
 
 The repository offers the typical structure of separate folders for data, and R (code/scripts).
-* The _data_ folder includes two input text files: 15106232_Taylor(2009).txt and 19637942_Baker(2009).txt;
-* The _models_ folder includes two text files, one for the Bayesian random-effects meta-analysis model of continuous outcome and one for the Bayesian random-effects network meta-analysis model of a binary outcome;
-* The _R_ folder includes two analysis scripts (Bayesian random-effects MA_Reproducible.R and Bayesian random-effects NMA_Reproducible.R), which source the model and data scripts and perform all analyses, and the five scripts with functions to produce the relevant output; namely, the enhanced balloon-plots, the heatmap of robustness, and the bar-plots with the Kullback-Leibler divergence measure for each scenario analysis.
+* The _data_ folder includes four .RData files: _singh_dataset_, and _singh_network_ for the first motivating example, and _baker_dataset_, and _baker_network_ for the second motivating example
+* The _R_ folder includes one function (long.to.wide_function.R) and three analysis R scripts to replicate the Figures (main and supplementary): _A. Main Figures_Singh & Baker_ to replicate the main figures, _B. Supplementary Figures_Singh_ to replicate the supplementary figures of the first example and _C. Supplementary Figures_Baker_ to replicate the supplementary figures of the second example.
 
 [JAGS](http://mcmc-jags.sourceforge.net/) must be installed to employ the [R2jags](https://github.com/suyusung/R2jags/issues/) package. After downloading/cloning the repo, the user can use the .Rproj file to source all code.
 
