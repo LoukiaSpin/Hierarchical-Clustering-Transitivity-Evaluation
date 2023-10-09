@@ -8,5 +8,8 @@ The repository offers the typical structure of separate folders for data, and R 
 
 After downloading/cloning the repo, the user can use the .Rproj file to source all code.
 
+*To use the functions of our approach, please, load the development version:
+remotes::install_github("https://github.com/LoukiaSpin/rnmamod.git", force = TRUE)
+
 ## Output 
 Prerequisite R packages: [rnmamod](https://CRAN.R-project.org/package=rnmamod), [reshape2](https://CRAN.R-project.org/package=reshape2), [ggpubr](https://cran.r-project.org/web/packages/ggpubr/) and [stringr](https://CRAN.R-project.org/package=stringr)
