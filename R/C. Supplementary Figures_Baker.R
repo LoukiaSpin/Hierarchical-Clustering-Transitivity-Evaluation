@@ -14,7 +14,7 @@ remotes::install_github("https://github.com/LoukiaSpin/rnmamod.git", force = TRU
 
 
 ## Load libraries ----
-list.of.packages <- c("rnmamod", "reshape2", "ggpubr", "stringr", "cluster")
+list.of.packages <- c("rnmamod", "reshape2", "ggpubr", "stringr", "cluster", "scales")
 lapply(list.of.packages, require, character.only = TRUE); rm(list.of.packages)
 
 
