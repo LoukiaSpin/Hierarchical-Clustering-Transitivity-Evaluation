@@ -14,7 +14,7 @@ remotes::install_github("https://github.com/LoukiaSpin/rnmamod.git", force = TRU
 
 
 ## Load libraries ----
-list.of.packages <- c("rnmamod", "reshape2", "ggpubr", "stringr", "cluster", "scales")
+list.of.packages <- c("rnmamod", "reshape2", "ggpubr", "stringr", "cluster", "scales", "dendextend")
 lapply(list.of.packages, require, character.only = TRUE); rm(list.of.packages)
 
 
@@ -113,7 +113,7 @@ dev.off()
 
 # Figure S4
 tiff("./Figure S4.tiff", height = 20, width = 35, units = 'cm', compression = "lzw", res = 600)
-singh$Across_comparison_dissimilarity
+singh$Between_comparison_dissimilarity
 dev.off()
 
 # Figure S5
