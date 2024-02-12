@@ -117,7 +117,7 @@ baker_hie <- comp_clustering(input = dataset,
                              axis_text_size = 11)
 
 # Table S5: Cophenetic correlation coefficients 
-baker$Table_cophenetic_coefficient
+baker_hie$Table_cophenetic_coefficient
  
 # Figure S15
 tiff("./Figure S15.tiff", height = 20, width = 35, units = 'cm', compression = "lzw", res = 600)

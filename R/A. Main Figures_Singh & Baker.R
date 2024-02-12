@@ -188,7 +188,7 @@ dev.off()
 
 ## Figure 4
 tiff("./Figure 4.tiff", height = 20, width = 35, units = 'cm', compression = "lzw", res = 600)
-singh_inf$Informative_heatmap
+singh_inf$Dissimilarity_heatmap
 dev.off()
 
 
@@ -200,7 +200,7 @@ dev.off()
 
 ## Figure 6
 tiff("./Figure 6.tiff", height = 20, width = 35, units = 'cm', compression = "lzw", res = 600)
-baker_inf$Informative_heatmap
+baker_inf$Dissimilarity_heatmap
 dev.off()
 
 
