@@ -133,7 +133,7 @@ network_data_baker <- long_to_wide(input = data_network_baker)
 ## Create dissimilarity matrix (D) and heatmap (Baker) ----
 # ?comp_clustering
 baker_inf <- comp_clustering(input = dataset_baker, 
-                             weight = c(rep(0.1, 9), 1, 1),
+                             weight = c(rep(1, 9), 0.5, 0.5),
                              drug_names = c("PBO", "BUD", "BUD+", "FLU", "FLU+", "FOR", "SAL", "TIO"),
                              threshold = 0.13,
                              informative = TRUE,
@@ -148,6 +148,7 @@ baker_inf <- comp_clustering(input = dataset_baker,
 ## Conduct hierarchical clustering (Baker) ----
 # ?comp_clustering
 baker_hie <- comp_clustering(input = dataset_baker, 
+                             weight = c(rep(1, 9), 0.5, 0.5),
                              drug_names = c("PBO", "BUD", "BUD+", "FLU", "FLU+", "FOR", "SAL", "TIO"),
                              informative = FALSE,
                              optimal_clusters = 3,

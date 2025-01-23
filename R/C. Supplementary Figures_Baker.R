@@ -98,6 +98,7 @@ miss_char$Tileplot
 ## Create dissimilarity matrix (D) and heatmap ----
 # ?comp_clustering
 baker <- comp_clustering(input = dataset, 
+                         weight = c(rep(1, 9), 0.5, 0.5),
                          drug_names = c("PBO", "BUD", "BUD+", "FLU", "FLU+", "FOR", "SAL", "TIO"),
                          threshold = 0.13,
                          informative = TRUE,
@@ -109,6 +110,7 @@ baker <- comp_clustering(input = dataset,
 ## Conduct hierarchical clustering ----
 # ?comp_clustering
 baker_hie <- comp_clustering(input = dataset, 
+                             weight = c(rep(1, 9), 0.5, 0.5),
                              drug_names = c("PBO", "BUD", "BUD+", "FLU", "FLU+", "FOR", "SAL", "TIO"),
                              informative = FALSE,
                              optimal_clusters = 3,
@@ -137,6 +139,7 @@ dev.off()
 # Figure S18a
 tiff("./Figure S18a.tiff", height = 20, width = 35, units = 'cm', compression = "lzw", res = 600)
 comp_clustering(input = dataset, 
+                weight = c(rep(1, 9), 0.5, 0.5),
                 drug_names = c("PBO", "BUD", "BUD+", "FLU", "FLU+", "FOR", "SAL", "TIO"), 
                 informative = FALSE,
                 optimal_clusters = 2,
@@ -151,6 +154,7 @@ dev.off()
 # Figure S18b
 tiff("./Figure S18b.tiff", height = 20, width = 35, units = 'cm', compression = "lzw", res = 600)
 comp_clustering(input = dataset, 
+                weight = c(rep(1, 9), 0.5, 0.5),
                 drug_names = c("PBO", "BUD", "BUD+", "FLU", "FLU+", "FOR", "SAL", "TIO"), 
                 informative = FALSE,
                 optimal_clusters = 3,
@@ -165,6 +169,7 @@ dev.off()
 # Figure S18c
 tiff("./Figure S18c.tiff", height = 20, width = 35, units = 'cm', compression = "lzw", res = 600)
 comp_clustering(input = dataset, 
+                weight = c(rep(1, 9), 0.5, 0.5),
                 drug_names = c("PBO", "BUD", "BUD+", "FLU", "FLU+", "FOR", "SAL", "TIO"), 
                 informative = FALSE,
                 optimal_clusters = 4,
@@ -179,6 +184,7 @@ dev.off()
 # Figure S18d
 tiff("./Figure S18d.tiff", height = 20, width = 35, units = 'cm', compression = "lzw", res = 600)
 comp_clustering(input = dataset, 
+                weight = c(rep(1, 9), 0.5, 0.5),
                 drug_names = c("PBO", "BUD", "BUD+", "FLU", "FLU+", "FOR", "SAL", "TIO"), 
                 informative = FALSE,
                 optimal_clusters = 5,
