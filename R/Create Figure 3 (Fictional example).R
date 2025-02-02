@@ -27,7 +27,7 @@ data_set <- data.frame(Trial_name = as.character(1:7),
                        arm2 = c("2", "2", "2", "3", "3", "3", "3"),
                        sample = c(140, 145, 150, 40, 45, 75, 80),
                        age = c(18, 18, 18, 48, 48, 35, 35),
-                       blinding = factor(c("yes", "yes", "yes", "no", "no", "no", "no")))
+                       randomisation = factor(c("yes", "yes", "yes", "no", "no", "no", "no")))
 
 # Check if typeof has been corrected
 lapply(data_set, typeof)
